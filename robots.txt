@@ -1,0 +1,5 @@
+# ASTAU · Sitio en desarrollo: bloqueado para buscadores.
+# Al publicar con el dominio definitivo, ejecutar tools/publicar-dominio.sh,
+# que reemplaza este archivo por la versión abierta.
+User-agent: *
+Disallow: /
