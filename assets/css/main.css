@@ -1530,6 +1530,10 @@ html:not(.js) .tabs {
   z-index: -1;
 }
 
+.closing__mark{
+  width: clamp(24rem, 60vw, 66rem);
+}
+
 .closing .quote {
   max-width: 24ch;
 }
