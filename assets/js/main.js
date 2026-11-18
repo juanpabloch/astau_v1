@@ -177,6 +177,53 @@
 
   /* 4. Apariciones ------------------------------------------------------- */
 
+  function initManifesto() {
+    var manifesto = $('[aria-labelledby="manifiesto-titulo"]');
+    if (!manifesto || reduceMotion) return;
+
+    var lines = $$(".manifesto__world, .manifesto__practice, .manifesto__statement", manifesto);
+    var cta = $(".manifesto__cta", manifesto);
+    if (!lines.length) return;
+
+    var delay = 200;      /* Espera inicial antes de la 1ª frase (ms) */
+    var step = 950;       /* Tiempo entre el inicio de una frase y la siguiente (ms) */
+    var duration = 1800;  /* Duración del recorrido/desenfoque de cada frase (ms) */
+
+    manifesto.style.setProperty("--line-duration", duration + "ms");
+
+    lines.forEach(function (line, index) {
+      if (index > 0) {
+        delay += step;
+      }
+      line.style.setProperty("--line-delay", delay + "ms");
+    });
+
+    if (cta) {
+      cta.style.setProperty("--cta-delay", delay + step + "ms");
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      manifesto.classList.add("is-visible");
+      return;
+    }
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            window.requestAnimationFrame(function () {
+              manifesto.classList.add("is-visible");
+            });
+            observer.unobserve(manifesto);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -22% 0px", threshold: 0.25 }
+    );
+
+    observer.observe(manifesto);
+  }
+
   function initReveal() {
     var items = $$(".reveal");
     if (!items.length) return;
@@ -753,6 +800,7 @@
   initTracking();
   initHeader();
   initMenu();
+  initManifesto();
   initReveal();
   initIndexPreview();
   initSchedule();
