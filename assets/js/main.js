@@ -185,8 +185,8 @@
     var cta = $(".manifesto__cta", manifesto);
     if (!lines.length) return;
 
-    var delay = 200;      /* Espera inicial antes de la 1ª frase (ms) */
-    var step = 950;       /* Tiempo entre el inicio de una frase y la siguiente (ms) */
+    var delay = 40;      /* Espera inicial antes de la 1ª frase (ms) */
+    var step = 900;       /* Tiempo entre el inicio de una frase y la siguiente (ms) */
     var duration = 1800;  /* Duración del recorrido/desenfoque de cada frase (ms) */
 
     manifesto.style.setProperty("--line-duration", duration + "ms");
@@ -218,7 +218,7 @@
           }
         });
       },
-      { rootMargin: "0px 0px -22% 0px", threshold: 0.25 }
+      { rootMargin: "0px 0px -22% 0px", threshold: 0.15 }
     );
 
     observer.observe(manifesto);
