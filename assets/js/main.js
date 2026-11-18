@@ -796,6 +796,80 @@
 
   /* Inicio --------------------------------------------------------------- */
 
+  function initFaq() {
+    var items = $$(".faq details");
+    if (!items.length || reduceMotion || !("animate" in HTMLElement.prototype)) return;
+
+    items.forEach(function (details) {
+      var summary = $("summary", details);
+      var answer = $(".faq__answer", details);
+      if (!summary || !answer) return;
+
+      var heightAnim = null;
+      var fadeAnim = null;
+
+      function cleanup() {
+        details.style.height = "";
+        details.style.overflow = "";
+        details.classList.remove("is-closing");
+        heightAnim = null;
+        fadeAnim = null;
+      }
+
+      summary.addEventListener("click", function (event) {
+        event.preventDefault();
+
+        if (heightAnim) heightAnim.cancel();
+        if (fadeAnim) fadeAnim.cancel();
+
+        var startHeight = details.offsetHeight;
+        details.style.overflow = "clip";
+
+        if (details.open) {
+          details.classList.add("is-closing");
+          var endHeight = summary.offsetHeight;
+
+          heightAnim = details.animate(
+            [{ height: startHeight + "px" }, { height: endHeight + "px" }],
+            { duration: 320, easing: "cubic-bezier(0.4, 0, 0.2, 1)" }
+          );
+          fadeAnim = answer.animate(
+            [
+              { opacity: 1, transform: "translateY(0)" },
+              { opacity: 0, transform: "translateY(-0.25rem)" }
+            ],
+            { duration: 240, easing: "cubic-bezier(0.4, 0, 0.2, 1)" }
+          );
+
+          heightAnim.onfinish = function () {
+            details.open = false;
+            cleanup();
+          };
+          heightAnim.oncancel = cleanup;
+        } else {
+          details.classList.remove("is-closing");
+          details.open = true;
+          var openHeight = details.offsetHeight;
+
+          heightAnim = details.animate(
+            [{ height: startHeight + "px" }, { height: openHeight + "px" }],
+            { duration: 340, easing: "cubic-bezier(0.4, 0, 0.2, 1)" }
+          );
+          fadeAnim = answer.animate(
+            [
+              { opacity: 0, transform: "translateY(-0.25rem)" },
+              { opacity: 1, transform: "translateY(0)" }
+            ],
+            { duration: 320, easing: "cubic-bezier(0.4, 0, 0.2, 1)" }
+          );
+
+          heightAnim.onfinish = cleanup;
+          heightAnim.oncancel = cleanup;
+        }
+      });
+    });
+  }
+
   initAnalytics();
   initTracking();
   initHeader();
@@ -804,5 +878,6 @@
   initReveal();
   initIndexPreview();
   initSchedule();
+  initFaq();
   initHeroVideo();
 })();

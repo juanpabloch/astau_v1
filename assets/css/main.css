@@ -15,6 +15,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-h) + 1.5rem);
   overflow-x: clip;
@@ -79,9 +80,29 @@ button {
   cursor: pointer;
 }
 
+a,
+button,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+summary:focus:not(:focus-visible) {
+  outline: none;
+}
+
 :focus-visible {
   outline: 2px solid var(--c-accent);
   outline-offset: 4px;
+}
+
+@media (hover: none), (pointer: coarse) {
+  a:focus,
+  button:focus,
+  summary:focus {
+    outline: none;
+  }
 }
 
 ::selection {
@@ -1362,32 +1383,6 @@ html:not(.js) .tabs {
   border-bottom: 1px solid var(--c-line);
 }
 
-.faq details::details-content {
-  interpolate-size: allow-keywords;
-  overflow: clip;
-  contain: layout;
-}
-
-.faq details:not([open])::details-content {
-  block-size: 0;
-  opacity: 0;
-}
-
-.faq details[open]::details-content {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .faq details::details-content {
-    transition:
-      block-size var(--t-fast) var(--ease),
-      opacity var(--t-fast) var(--ease),
-      content-visibility var(--t-fast) var(--ease),
-      display var(--t-fast) var(--ease);
-    transition-behavior: allow-discrete;
-  }
-}
-
 .faq summary {
   display: flex;
   align-items: baseline;
@@ -1413,7 +1408,7 @@ html:not(.js) .tabs {
   transition: transform var(--t-fast) var(--ease);
 }
 
-.faq details[open] summary::after {
+.faq details[open]:not(.is-closing) summary::after {
   transform: rotate(45deg);
 }
 
