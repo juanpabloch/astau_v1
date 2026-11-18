@@ -288,12 +288,12 @@ summary:focus:not(:focus-visible) {
 .header__logo {
   display: flex;
   align-items: center;
-  min-height: 2.75rem;
+  min-height: 4rem;
 }
 
 .header__logo img {
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 6rem;
+  height: 6rem;
 }
 
 .header__logo-light {
@@ -752,6 +752,17 @@ a:hover .media img,
   display: grid;
   gap: var(--s-3);
   justify-items: start;
+}
+
+.hero__content .label {
+  font-size: 1.4rem;
+}
+
+.hero__content h1{
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
 .hero__lead {
