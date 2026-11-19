@@ -56,7 +56,8 @@
   --maxw: 90rem;
   --gutter: clamp(1.25rem, 4.4vw, 4rem);
   --gap: clamp(1rem, 2.2vw, 2rem);
-  --header-h: 7rem;
+  --header-h: clamp(7.75rem, 10.5vw, 10rem);
+  --header-h-scrolled: 6rem;
   --radius: 0.8rem;
 
   /* Movimiento: una curva, dos duraciones */

@@ -20,6 +20,105 @@
     return Array.prototype.slice.call((root || document).querySelectorAll(selector));
   }
 
+  /* 0. Layout compartido (Header, Menú y Footer) ------------------------- */
+
+  function initSharedLayout() {
+    var body = document.body;
+    if (!body || !body.dataset.root) return;
+
+    var root = body.dataset.root === "." ? "" : body.dataset.root.replace(/\/$/, "") + "/";
+    var homeHref = root || "./";
+    var page = body.dataset.page || "";
+    var waHref =
+      "https://wa.me/5491137042408?text=Hola%2C%20quiero%20agendar%20una%20pr%C3%A1ctica%20en%20ASTAU.";
+
+    var navItems = [
+      { id: "inicio", label: "Inicio", href: homeHref },
+      { id: "clases", label: "Clases", href: root + "clases/" },
+      { id: "astau", label: "Astau", href: root + "astau/" },
+      { id: "contacto", label: "Contacto", href: "#contacto" }
+    ];
+
+    var header = $(".header");
+    if (header) {
+      var navListHtml = navItems
+        .map(function (item) {
+          var current = item.id === page ? ' aria-current="page"' : "";
+          return '<li><a class="nav__link" href="' + item.href + '"' + current + ">" + item.label + "</a></li>";
+        })
+        .join("");
+
+      header.innerHTML =
+        '<div class="wrap header__inner">' +
+        '<a class="header__logo" href="' + homeHref + '" aria-label="ASTAU, ir al inicio">' +
+        '<img class="header__logo-color" src="' + root + 'assets/brand/logo-color.svg" alt="ASTAU" width="93" height="124">' +
+        '<img class="header__logo-light" src="' + root + 'assets/brand/logo-negativo.svg" alt="" width="93" height="124">' +
+        "</a>" +
+        '<nav class="nav" aria-label="Principal">' +
+        '<ul class="nav__list">' + navListHtml + "</ul>" +
+        "</nav>" +
+        '<div class="header__cta">' +
+        '<a class="btn btn--small" href="' + waHref + '" target="_blank" rel="noopener" data-track="clic_whatsapp" data-ubicacion="header">Agendá tu práctica</a>' +
+        "</div>" +
+        '<button class="menu-toggle" type="button" data-menu-open aria-expanded="false" aria-controls="menu">Menú</button>' +
+        "</div>";
+    }
+
+    var menu = $("#menu");
+    if (menu) {
+      var menuListHtml = navItems
+        .map(function (item) {
+          var current = item.id === page ? ' aria-current="page"' : "";
+          return '<li><a class="menu__link" href="' + item.href + '"' + current + ">" + item.label + "</a></li>";
+        })
+        .join("");
+
+      menu.innerHTML =
+        '<div class="menu__top">' +
+        '<a class="header__logo" href="' + homeHref + '" aria-label="ASTAU, ir al inicio">' +
+        '<img src="' + root + 'assets/brand/logo-color.svg" alt="ASTAU" width="93" height="124">' +
+        "</a>" +
+        '<button class="menu-toggle" type="button" data-menu-close>Cerrar</button>' +
+        "</div>" +
+        '<ul class="menu__list">' + menuListHtml + "</ul>" +
+        '<div class="menu__foot">' +
+        '<a class="btn" href="' + waHref + '" target="_blank" rel="noopener" data-track="clic_whatsapp" data-ubicacion="menu">Agendá tu práctica</a>' +
+        "<p>Austria 2272, 1° A, Recoleta, CABA</p>" +
+        "</div>";
+    }
+
+    var footer = $("#contacto.footer");
+    if (footer) {
+      footer.innerHTML =
+        '<div class="wrap">' +
+        '<div class="grid footer__grid">' +
+        '<div class="footer__logo">' +
+        '<img src="' + root + 'assets/brand/logo-color.svg" alt="ASTAU" width="120" height="160" loading="lazy">' +
+        "</div>" +
+        '<div class="footer__col">' +
+        '<h2 class="label">Sala</h2>' +
+        "<p>Nuestra sala está equipada con elementos de la más alta calidad para acompañar tu práctica.</p>" +
+        "</div>" +
+        '<div class="footer__col">' +
+        '<h2 class="label">Ubicación</h2>' +
+        "<p>Austria 2272, 1° A<br>Recoleta, CABA</p>" +
+        '<p><a href="https://maps.app.goo.gl/wTtZTwhwu7xZctVu7" target="_blank" rel="noopener" data-track="clic_maps">Cómo llegar</a></p>' +
+        "</div>" +
+        '<div class="footer__col">' +
+        '<h2 class="label">Contacto</h2>' +
+        '<p><a href="' + waHref + '" target="_blank" rel="noopener" data-track="clic_whatsapp" data-ubicacion="footer">WhatsApp +54 9 11 3704 2408</a></p>' +
+        '<p><a href="https://www.instagram.com/astau.yogastudio/" target="_blank" rel="noopener" data-track="clic_instagram">@astau.yogastudio</a></p>' +
+        '<p><a href="mailto:astauyogastudio@gmail.com" data-track="clic_mail">astauyogastudio@gmail.com</a></p>' +
+        "</div>" +
+        "</div>" +
+        '<div class="site-footer__bottom">' +
+        "<p>© 2026 ASTAU Yoga Studio · Recoleta, Buenos Aires.</p>" +
+        '<p class="site-footer__mantra">Menos escuela, más experiencia · Menos doctrina, más exploración · Menos autoridad, más guía.</p>' +
+        "</div>" +
+        "</div>";
+    }
+  }
+
   /* 1. Medición ---------------------------------------------------------- */
 
   var analytics = config.analytics || {};
@@ -90,6 +189,9 @@
   function initHeader() {
     var header = $(".header");
     if (!header) return;
+    if ($(".page-head__media img, .page-head__media video")) {
+      header.classList.add("header--over");
+    }
     var lastY = window.scrollY;
     var ticking = false;
 
@@ -870,6 +972,113 @@
     });
   }
 
+  function initGuideModals() {
+    var modals = $$("dialog.guide-modal");
+    if (!modals.length) return;
+
+    var supportsDisplayTransition;
+    function canTransitionDisplay() {
+      if (supportsDisplayTransition !== undefined) return supportsDisplayTransition;
+      if (!window.CSS || !window.CSS.supports || !window.CSS.supports("transition-behavior", "allow-discrete") || !document.body) {
+        return false;
+      }
+      var probe = document.createElement("div");
+      probe.style.cssText = "transition: display 1s allow-discrete !important; display: block;";
+      document.body.appendChild(probe);
+      window.getComputedStyle(probe).display;
+      probe.style.display = "none";
+      supportsDisplayTransition = window.getComputedStyle(probe).display === "block";
+      probe.remove();
+      return supportsDisplayTransition;
+    }
+
+    function supportsTopLayerExit() {
+      return !!(window.CSS && window.CSS.supports && window.CSS.supports("overlay", "auto") && canTransitionDisplay());
+    }
+
+    function closeTopLayer(dialog) {
+      if (!dialog || !dialog.open) return;
+      if (!supportsTopLayerExit() && !reduceMotion && dialog.getAnimations) {
+        dialog.setAttribute("data-closing", "");
+        var animations = dialog.getAnimations({ subtree: true });
+        if (animations.length > 0) {
+          Promise.race([
+            Promise.allSettled(
+              animations.map(function (a) {
+                return a.finished;
+              })
+            ),
+            new Promise(function (resolve) {
+              window.setTimeout(resolve, 400);
+            })
+          ]).then(function () {
+            if (!dialog.hasAttribute("data-closing")) return;
+            dialog.removeAttribute("data-closing");
+            dialog.close();
+          });
+          return;
+        }
+        dialog.removeAttribute("data-closing");
+      }
+      dialog.close();
+    }
+
+    function isOutside(event, dialog) {
+      var r = dialog.getBoundingClientRect();
+      return event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom;
+    }
+
+    $$("[data-guide-open]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var modal = document.getElementById(btn.getAttribute("data-guide-open"));
+        if (modal && !modal.open && typeof modal.showModal === "function") {
+          modal.removeAttribute("data-closing");
+          modal.showModal();
+        }
+      });
+    });
+
+    modals.forEach(function (dialog) {
+      $$("[data-modal-close]", dialog).forEach(function (closeBtn) {
+        closeBtn.addEventListener("click", function () {
+          closeTopLayer(dialog);
+        });
+      });
+
+      dialog.addEventListener("cancel", function (event) {
+        event.preventDefault();
+        closeTopLayer(dialog);
+      });
+
+      if (!("closedBy" in HTMLDialogElement.prototype)) {
+        var pressedOutside = false;
+        dialog.addEventListener("pointerdown", function (event) {
+          pressedOutside = event.target === dialog && isOutside(event, dialog);
+        });
+        dialog.addEventListener("pointerup", function (event) {
+          if (pressedOutside && event.target === dialog && isOutside(event, dialog)) {
+            closeTopLayer(dialog);
+          }
+          pressedOutside = false;
+        });
+      }
+    });
+
+    function openFromHash() {
+      var hash = (window.location.hash || "").replace(/^#/, "");
+      if (!hash) return;
+      var modal = document.getElementById("modal-" + hash);
+      if (modal && !modal.open && typeof modal.showModal === "function") {
+        modal.removeAttribute("data-closing");
+        modal.showModal();
+      }
+    }
+
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+  }
+
+  initSharedLayout();
   initAnalytics();
   initTracking();
   initHeader();
@@ -879,5 +1088,6 @@
   initIndexPreview();
   initSchedule();
   initFaq();
+  initGuideModals();
   initHeroVideo();
 })();

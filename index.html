@@ -112,14 +112,14 @@
 }
   </script>
 </head>
-<body>
+<body data-root="." data-page="inicio">
   <a class="skip" href="#contenido">Saltar al contenido</a>
 
   <header class="header header--over">
     <div class="wrap header__inner">
       <a class="header__logo" href="./" aria-label="ASTAU, ir al inicio">
-        <img class="header__logo-color" src="assets/brand/logo-color.svg" alt="ASTAU" width="80" height="80">
-        <img class="header__logo-light" src="assets/brand/logo-negativo.svg" alt="" width="80" height="80">
+        <img class="header__logo-color" src="assets/brand/logo-color.svg" alt="ASTAU" width="93" height="124">
+        <img class="header__logo-light" src="assets/brand/logo-negativo.svg" alt="" width="93" height="124">
       </a>
       <nav class="nav" aria-label="Principal">
         <ul class="nav__list">
@@ -139,7 +139,7 @@
   <div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menú">
     <div class="menu__top">
       <a class="header__logo" href="./" aria-label="ASTAU, ir al inicio">
-        <img src="assets/brand/isotipo-color.svg" alt="ASTAU" width="44" height="44">
+        <img src="assets/brand/logo-color.svg" alt="ASTAU" width="93" height="124">
       </a>
       <button class="menu-toggle" type="button" data-menu-close>Cerrar</button>
     </div>
@@ -173,7 +173,7 @@
           <!-- <h1 class="display reveal" id="hero-titulo">Yoga &amp; Meditación</h1> -->
           <h1 class="reveal" id="hero-titulo">Una práctica personal que se construye con guía y en comunidad.</h1>
           <!-- <p class="hero__lead reveal">Una práctica personal que se construye con guía y en comunidad.</p> -->
-          <p class="hero__mantra reveal"><span>Respirar.</span> <span>Observar.</span> <span>Estar presente.</span></p>
+          <!-- <p class="hero__mantra reveal"><span>Respirar.</span> <span>Observar.</span> <span>Estar presente.</span></p> -->
           <!-- <div class="actions reveal">
             <a class="btn btn--light" href="https://wa.me/5491137042408?text=Hola%2C%20quiero%20agendar%20una%20pr%C3%A1ctica%20en%20ASTAU." target="_blank" rel="noopener" data-track="clic_whatsapp" data-ubicacion="hero">Agendá tu práctica</a>
             <a class="link" href="clases/#horarios">Ver horarios</a>
@@ -185,52 +185,46 @@
 
     <section class="section" aria-labelledby="practicas-titulo">
       <div class="wrap grid">
-        <div class="section-head index-head">
+        <h2 class="sr-only" id="practicas-titulo">Clases</h2>
+        <!-- <div class="section-head index-head">
           <p class="label reveal">Clases</p>
           <h2 class="h2 reveal" id="practicas-titulo"><span>Un camino</span> <span>Diferentes prácticas</span></h2>
-        </div>
+        </div> -->
         <div class="index-col">
           <ol class="index reveal">
               <li>
                 <a class="index__link" href="clases/#ashtanga" data-preview="assets/img/practica-ashtanga.jpg" data-preview-alt="Práctica de Ashtanga en la sala de ASTAU" data-track="ver_practica" data-practica="ashtanga">
                   <span class="index__name">Ashtanga</span>
-                  <span class="index__meta">Constanza Iselli &amp; Paz Rufino · 120’</span>
                 </a>
               </li>
               <li>
                 <a class="index__link" href="clases/#yin-yoga" data-preview="assets/img/practica-yin-yoga.jpg" data-preview-alt="Práctica de Yin Yoga con elementos de sostén" data-track="ver_practica" data-practica="yin-yoga">
                   <span class="index__name">Yin Yoga</span>
-                  <span class="index__meta">Lucía Larroudé · 60’</span>
                 </a>
               </li>
               <li>
                 <a class="index__link" href="clases/#hatha-yoga" data-preview="assets/img/practica-hatha-yoga.jpg" data-preview-alt="Práctica de Hatha Yoga en ASTAU" data-track="ver_practica" data-practica="hatha-yoga">
                   <span class="index__name">Hatha Yoga</span>
-                  <span class="index__meta">Jésica Doldan · 60’</span>
                 </a>
               </li>
               <li>
                 <a class="index__link" href="clases/#yoga-terapia" data-preview="assets/img/practica-yoga-terapia.jpg" data-preview-alt="Práctica de Yoga Terapia con elementos de apoyo" data-track="ver_practica" data-practica="yoga-terapia">
                   <span class="index__name">Yoga Terapia</span>
-                  <span class="index__meta">Melisa Larsen · 60’</span>
                 </a>
               </li>
               <li>
                 <a class="index__link" href="clases/#yoga-embarazo" data-preview="assets/img/practica-yoga-embarazo.jpg" data-preview-alt="Práctica de yoga prenatal en ASTAU" data-track="ver_practica" data-practica="yoga-embarazo">
                   <span class="index__name">Yoga &amp; Embarazo</span>
-                  <span class="index__meta">Jésica Doldan · 60’</span>
                 </a>
               </li>
               <li>
                 <a class="index__link" href="clases/#yoga-maternidad" data-preview="assets/img/practica-yoga-maternidad.jpg" data-preview-alt="Práctica de yoga postnatal con bebés en ASTAU" data-track="ver_practica" data-practica="yoga-maternidad">
                   <span class="index__name">Yoga &amp; Maternidad</span>
-                  <span class="index__meta">Jésica Doldan · 60’</span>
                 </a>
               </li>
               <li>
                 <a class="index__link" href="clases/#meditacion" data-preview="assets/img/practica-meditacion.jpg" data-preview-alt="Encuentro de meditación en ASTAU" data-track="ver_practica" data-practica="meditacion">
                   <span class="index__name">Meditación</span>
-                  <span class="index__meta">Constanza Iselli &amp; Lucía Larroudé · 30’</span>
                 </a>
               </li>
           </ol>
@@ -380,7 +374,7 @@
         </div>
         <div class="footer__col">
           <h2 class="label">Ubicación</h2>
-          <p>Austria 2272, 1° A<br>Recoleta (Barrio Norte), CABA</p>
+          <p>Austria 2272, 1° A<br>Recoleta, CABA</p>
           <p><a href="https://maps.app.goo.gl/wTtZTwhwu7xZctVu7" target="_blank" rel="noopener" data-track="clic_maps">Cómo llegar</a></p>
         </div>
         <div class="footer__col">
@@ -391,8 +385,9 @@
         </div>
       </div>
       
-      <div class="footer__bottom">
-        <p>© 2026 ASTAU</p>
+      <div class="site-footer__bottom">
+        <p>© 2026 ASTAU Yoga Studio · Recoleta, Buenos Aires.</p>
+        <p class="site-footer__mantra">Menos escuela, más experiencia · Menos doctrina, más exploración · Menos autoridad, más guía.</p>
       </div>
     </div>
   </footer>
