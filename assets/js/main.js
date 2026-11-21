@@ -192,16 +192,12 @@
     if ($(".page-head__media img, .page-head__media video")) {
       header.classList.add("header--over");
     }
-    var lastY = window.scrollY;
     var ticking = false;
 
     function update() {
       var y = window.scrollY;
       header.classList.toggle("is-scrolled", y > 8);
-      var goingDown = y > lastY && y > 240;
-      var focusInside = header.contains(document.activeElement);
-      header.classList.toggle("is-hidden", goingDown && !focusInside);
-      lastY = y;
+      header.classList.remove("is-hidden");
       ticking = false;
     }
 
