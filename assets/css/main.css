@@ -1581,6 +1581,302 @@ html:not(.js) .tabs {
 
 /* 7. Equipo -------------------------------------------------------------- */
 
+.sutra-section {
+  position: relative;
+  overflow-x: clip;
+  isolation: isolate;
+  padding-block: clamp(7.5rem, 15vw, 13.5rem);
+}
+
+/* Arcos orgánicos superior e inferior (transición suave entre secciones) */
+.sutra-wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: clamp(2.75rem, 6vw, 5.25rem);
+  z-index: 1;
+  pointer-events: none;
+  line-height: 0;
+}
+
+.sutra-wave svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.sutra-wave--top {
+  top: -1px;
+}
+
+.sutra-wave--bottom {
+  bottom: -1px;
+}
+
+/* Portales artísticos de comienzo (Origen) y fin (Desembocadura a Guías) */
+.sutra-portal {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.sutra-portal--start {
+  top: clamp(0.75rem, 2.5vw, 2rem);
+}
+
+.sutra-portal--end {
+  bottom: clamp(0.5rem, 2vw, 1.5rem);
+}
+
+.sutra-portal__stem {
+  display: block;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--c-accent));
+}
+
+.sutra-portal__stem--in {
+  height: clamp(2.5rem, 5vw, 4.25rem);
+  margin-bottom: -0.25rem;
+  opacity: 0.55;
+}
+
+.sutra-portal__stem--out {
+  height: clamp(3rem, 6vw, 5rem);
+  margin-top: -0.15rem;
+  background: linear-gradient(to bottom, var(--c-accent), transparent);
+  transform: scaleY(0.25);
+  transform-origin: top center;
+  opacity: 0.3;
+  transition:
+    transform 650ms var(--ease),
+    opacity 650ms var(--ease);
+}
+
+.sutra-portal__medallion {
+  position: relative;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 999px;
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  box-shadow: 0 10px 30px rgb(91 46 68 / 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sutra-portal__ring {
+  position: absolute;
+  inset: -0.45rem;
+  border-radius: 999px;
+  border: 1px dashed var(--c-accent);
+  opacity: 0.38;
+  transition: transform 200ms linear;
+}
+
+.sutra-portal__mark {
+  width: 2.1rem;
+  height: 2.1rem;
+  opacity: 0.85;
+  transition: transform 200ms linear;
+}
+
+.sutra-portal__bloom {
+  position: relative;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 999px;
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color 450ms var(--ease),
+    transform 450ms var(--ease),
+    box-shadow 450ms var(--ease);
+}
+
+.sutra-portal__node {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: var(--c-line);
+  transition:
+    background-color 450ms var(--ease),
+    transform 450ms var(--ease);
+}
+
+.sutra-portal__ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid var(--c-accent);
+  opacity: 0;
+  transform: scale(0.85);
+}
+
+.sutra-portal--end.is-blooming .sutra-portal__bloom {
+  border-color: var(--c-accent);
+  transform: scale(1.08);
+  box-shadow: 0 0 0 6px rgb(91 46 68 / 0.08);
+}
+
+.sutra-portal--end.is-blooming .sutra-portal__node {
+  background: var(--c-accent);
+  transform: scale(1.25);
+}
+
+.sutra-portal--end.is-blooming .sutra-portal__stem--out {
+  transform: scaleY(1);
+  opacity: 0.85;
+}
+
+@keyframes sutra-ripple-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(2.15);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sutra-portal--end.is-blooming .sutra-portal__ripple {
+    animation: sutra-ripple-pulse 2.4s cubic-bezier(0.2, 0.7, 0.3, 1) infinite;
+  }
+  .sutra-portal--end.is-blooming .sutra-portal__ripple--delay {
+    animation-delay: 1.1s;
+  }
+}
+
+.sutra-canvas {
+  position: absolute;
+  inset: clamp(3.75rem, 4.5vw, 5rem) 0 clamp(2.75rem, 3.8vw, 4rem) 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.sutra-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.sutra-journey {
+  position: relative;
+  z-index: 2;
+  row-gap: clamp(5.5rem, 12vw, 10.5rem);
+}
+
+.sutra-step {
+  display: grid;
+  gap: var(--s-2);
+  max-width: 44rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border-radius: var(--radius);
+  background: rgb(238 234 228 / 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgb(192 184 177 / 0.55);
+  box-shadow: 0 12px 34px rgb(56 56 56 / 0.04);
+}
+
+.sutra-step__label {
+  color: var(--c-accent);
+  opacity: 0.85;
+}
+
+.sutra-step__copy {
+  font-size: clamp(1.5rem, 2.7vw, 2.5rem);
+  letter-spacing: -0.02em;
+  line-height: 1.24;
+  color: var(--c-text);
+}
+
+.sutra-step__copy--quote {
+  font-size: clamp(1.625rem, 3.1vw, 2.85rem);
+  font-style: italic;
+  line-height: 1.18;
+}
+
+.sutra-accent {
+  font-style: italic;
+  color: var(--c-accent);
+}
+
+.sutra-word {
+  display: inline-block;
+  margin-right: 0.25em;
+  transition:
+    opacity 320ms var(--ease),
+    color 320ms var(--ease),
+    filter 320ms var(--ease);
+  will-change: opacity, color, filter;
+}
+
+/* Nodos arrastrables del modo editor (?editar-linea o modoEditor: true) */
+.sutra-editor-handle {
+  position: absolute;
+  z-index: 30;
+  width: 1.85rem;
+  height: 1.85rem;
+  margin-left: -0.925rem;
+  margin-top: -0.925rem;
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: var(--c-bg);
+  border: 2px solid var(--c-bg);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.22);
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.sutra-editor-handle:active {
+  cursor: grabbing;
+  transform: scale(1.12);
+}
+
+.sutra-editor-bar {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  background: var(--c-text);
+  color: var(--c-bg);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.24);
+  font-size: 0.75rem;
+}
+
+.sutra-editor-bar button {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: var(--c-bg);
+  color: var(--c-accent);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .concepts {
   border-top: 1px solid var(--c-text);
 }
@@ -2376,6 +2672,27 @@ html:not(.js) .tabs {
 
   .concepts-col {
     grid-column: 4 / span 9;
+  }
+
+  .sutra-journey {
+    row-gap: clamp(7.5rem, 13vw, 12rem);
+  }
+
+  .sutra-step--1 {
+    grid-column: 2 / span 7;
+  }
+
+  .sutra-step--2 {
+    grid-column: 5 / span 7;
+    text-align: right;
+    justify-items: end;
+  }
+
+  .sutra-step--3 {
+    grid-column: 3 / span 8;
+    text-align: center;
+    justify-items: center;
+    margin-inline: auto;
   }
 
   .concepts div {

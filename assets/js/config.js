@@ -32,8 +32,8 @@ window.ASTAU_CONFIG = {
    * video definitivo tiene ese audio.
    */
   heroVideo: {
-    webm: "assets/video/hero-astau.webm",
-    mp4: "assets/video/hero-astau.mp4",
+    webm: "assets/video/hero-astau-v1.webm",
+    mp4: "assets/video/hero-astau-v1.mp4",
     sound: false
   }
 };

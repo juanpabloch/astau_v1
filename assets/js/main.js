@@ -1074,6 +1074,485 @@
     window.addEventListener("hashchange", openFromHash);
   }
 
+  /* 9. Línea Viva Sūtra + Pintado de palabras (Astau) -------------------- */
+
+  function initSutraLine() {
+    var section = $("[data-sutra-section]");
+    if (!section) return;
+
+    var cfg = window.ASTAU_LINEA_CONFIG || {};
+    var estilo = cfg.estilo || {};
+    var scrollCfg = cfg.scroll || {};
+    var textosCfg = cfg.textos || {};
+    var transCfg = cfg.transiciones || {};
+
+    var canvasWrap = $("[data-sutra-canvas]", section) || section;
+    var svg = $("[data-sutra-svg]", section);
+    var pathGuide = $("[data-sutra-guide]", section);
+    var pathTrail = $("[data-sutra-trail]", section);
+    var pathMain = $("[data-sutra-main]", section);
+    var orbGroup = $("[data-sutra-orb]", section);
+    var orbHalo = $("[data-sutra-orb-halo]", section);
+    var orbDot = $("[data-sutra-orb-dot]", section);
+    var orbCore = $("[data-sutra-orb-core]", section);
+
+    var waveTopPath = $("[data-sutra-wave-top]", section);
+    var waveBottomPath = $("[data-sutra-wave-bottom]", section);
+    var portalStart = $("[data-sutra-portal-start]", section);
+    var portalEnd = $("[data-sutra-portal-end]", section);
+    var portalMark = portalStart ? $(".sutra-portal__mark", portalStart) : null;
+    var portalRing = portalStart ? $(".sutra-portal__ring", portalStart) : null;
+
+    if (waveTopPath && transCfg.mostrarCurvaSuperior === false) {
+      waveTopPath.closest(".sutra-wave").style.display = "none";
+    }
+    if (waveBottomPath && transCfg.mostrarCurvaInferior === false) {
+      waveBottomPath.closest(".sutra-wave").style.display = "none";
+    }
+    if (portalStart && transCfg.mostrarPortalInicio === false) {
+      portalStart.style.display = "none";
+    }
+    if (portalEnd && transCfg.mostrarPortalFin === false) {
+      portalEnd.style.display = "none";
+    }
+
+    if (!svg || !pathMain) return;
+
+    /* 1. Aplicar estilos desde la configuración */
+    var colorLinea = estilo.colorLinea || "#5b2e44";
+    var grosorLinea = estilo.grosorLinea != null ? estilo.grosorLinea : 2.4;
+    var opacidadLinea = estilo.opacidadLinea != null ? estilo.opacidadLinea : 0.9;
+
+    pathMain.setAttribute("stroke", colorLinea);
+    pathMain.setAttribute("stroke-width", String(grosorLinea));
+    pathMain.setAttribute("stroke-linecap", "round");
+    pathMain.setAttribute("stroke-opacity", String(opacidadLinea));
+
+    if (pathTrail) {
+      if (estilo.mostrarEstela === false) {
+        pathTrail.style.display = "none";
+      } else {
+        pathTrail.setAttribute("stroke", estilo.colorEstela || colorLinea);
+        pathTrail.setAttribute("stroke-width", String(estilo.grosorEstela != null ? estilo.grosorEstela : 28));
+        pathTrail.setAttribute("stroke-linecap", "round");
+        pathTrail.setAttribute("stroke-opacity", String(estilo.opacidadEstela != null ? estilo.opacidadEstela : 0.065));
+      }
+    }
+
+    if (pathGuide) {
+      if (estilo.mostrarSurcoGuia === false) {
+        pathGuide.style.display = "none";
+      } else {
+        pathGuide.setAttribute("stroke", estilo.colorGuia || "#c0b8b1");
+        pathGuide.setAttribute("stroke-width", String(estilo.grosorGuia != null ? estilo.grosorGuia : 1));
+        if (estilo.trazoGuia !== "") {
+          pathGuide.setAttribute("stroke-dasharray", estilo.trazoGuia || "3 7");
+        }
+        pathGuide.setAttribute("stroke-opacity", String(estilo.opacidadGuia != null ? estilo.opacidadGuia : 0.65));
+      }
+    }
+
+    if (orbGroup) {
+      if (estilo.mostrarOrbe === false) {
+        orbGroup.style.display = "none";
+      } else {
+        var rOrbe = estilo.radioOrbe != null ? estilo.radioOrbe : 4.5;
+        var rHalo = estilo.radioHaloOrbe != null ? estilo.radioHaloOrbe : 14;
+        if (orbHalo) {
+          orbHalo.setAttribute("r", String(rHalo));
+          orbHalo.setAttribute("fill", colorLinea);
+          orbHalo.setAttribute("fill-opacity", String(estilo.opacidadHaloOrbe != null ? estilo.opacidadHaloOrbe : 0.2));
+        }
+        if (orbDot) {
+          orbDot.setAttribute("r", String(rOrbe));
+          orbDot.setAttribute("fill", colorLinea);
+        }
+        if (orbCore) {
+          orbCore.setAttribute("r", String(Math.max(1.5, rOrbe * 0.42)));
+          orbCore.setAttribute("fill", estilo.colorCentroOrbe || "#eeeae4");
+        }
+      }
+    }
+
+    /* 2. Separar palabras de cada bloque preservando <em class="sutra-accent"> */
+    var wordBlocks = [];
+    var defaultRanges = textosCfg.rangos || [
+      [0.02, 0.34],
+      [0.32, 0.66],
+      [0.64, 0.94]
+    ];
+
+    $$("[data-sutra-text]", section).forEach(function (el, blockIdx) {
+      var stepCard = el.closest(".sutra-step");
+      if (stepCard) {
+        if (textosCfg.opacidadFondoTexto != null) {
+          stepCard.style.backgroundColor = "rgb(238 234 228 / " + textosCfg.opacidadFondoTexto + ")";
+        }
+        if (textosCfg.blurFondoTexto != null) {
+          var blurVal = "blur(" + textosCfg.blurFondoTexto + "px)";
+          stepCard.style.backdropFilter = blurVal;
+          stepCard.style.webkitBackdropFilter = blurVal;
+        }
+      }
+      var words = [];
+      var nodes = Array.prototype.slice.call(el.childNodes);
+      el.innerHTML = "";
+
+      function pushWordsFromText(text, isAccent) {
+        var parts = text.replace(/\s+/g, " ").trim().split(" ");
+        parts.forEach(function (w) {
+          if (!w) return;
+          var span = document.createElement("span");
+          span.className = "sutra-word" + (isAccent ? " sutra-word--accent" : "");
+          span.textContent = w;
+          el.appendChild(span);
+          el.appendChild(document.createTextNode(" "));
+          words.push({ el: span, accent: isAccent });
+        });
+      }
+
+      nodes.forEach(function (node) {
+        if (node.nodeType === 3) {
+          pushWordsFromText(node.textContent, false);
+        } else if (node.nodeType === 1) {
+          var isAccent = node.classList.contains("sutra-accent") || node.tagName === "EM";
+          pushWordsFromText(node.textContent, isAccent);
+        }
+      });
+
+      wordBlocks.push({
+        words: words,
+        range: defaultRanges[blockIdx] || [blockIdx * 0.33, (blockIdx + 1) * 0.33]
+      });
+    });
+
+    /* 3. Generador de curva suave (Catmull-Rom a Cubic Bezier) */
+    var isMobileQuery = window.matchMedia("(max-width: 47.99rem)");
+    var activePoints = (isMobileQuery.matches && cfg.puntosMobile ? cfg.puntosMobile : cfg.puntos) || [
+      { x: 50, y: 0 },
+      { x: 14, y: 12 },
+      { x: 86, y: 32 },
+      { x: 88, y: 50 },
+      { x: 14, y: 66 },
+      { x: 50, y: 84 },
+      { x: 50, y: 100 }
+    ];
+
+    function buildSmoothPath(pts, width, height, tension) {
+      if (!pts || !pts.length) return "";
+      var p = pts.map(function (pt) {
+        return { x: (pt.x / 100) * width, y: (pt.y / 100) * height };
+      });
+      if (p.length === 1) return "M " + p[0].x + " " + p[0].y;
+      var t = tension != null ? tension : 0.36;
+      if (t <= 0) {
+        return p
+          .map(function (pt, idx) {
+            return (idx === 0 ? "M " : "L ") + pt.x.toFixed(1) + " " + pt.y.toFixed(1);
+          })
+          .join(" ");
+      }
+      var k = (t != null ? t : 0.36) * 0.5;
+      var d = "M " + p[0].x.toFixed(1) + " " + p[0].y.toFixed(1);
+      for (var i = 0; i < p.length - 1; i++) {
+        var p0 = p[i === 0 ? 0 : i - 1];
+        var p1 = p[i];
+        var p2 = p[i + 1];
+        var p3 = p[i + 2 < p.length ? i + 2 : p.length - 1];
+
+        var cp1x = p1.x + (p2.x - p0.x) * k;
+        var cp1y = p1.y + (p2.y - p0.y) * k;
+        var cp2x = p2.x - (p3.x - p1.x) * k;
+        var cp2y = p2.y - (p3.y - p1.y) * k;
+
+        /* Evitar que los puntos de control en Y se crucen o retrocedan */
+        var minY = Math.min(p1.y, p2.y);
+        var maxY = Math.max(p1.y, p2.y);
+        cp1y = Math.min(maxY, Math.max(minY, cp1y));
+        cp2y = Math.min(maxY, Math.max(minY, cp2y));
+        if (p2.y >= p1.y && cp1y > cp2y) {
+          var midY = (cp1y + cp2y) * 0.5;
+          cp1y = midY;
+          cp2y = midY;
+        }
+
+        d +=
+          " C " +
+          cp1x.toFixed(1) +
+          " " +
+          cp1y.toFixed(1) +
+          ", " +
+          cp2x.toFixed(1) +
+          " " +
+          cp2y.toFixed(1) +
+          ", " +
+          p2.x.toFixed(1) +
+          " " +
+          p2.y.toFixed(1);
+      }
+      return d;
+    }
+
+    var totalLen = 1000;
+    var canvasHeight = 1000;
+    var yToLengthTable = [];
+
+    function rebuildGeometry() {
+      var w = Math.max(320, canvasWrap.clientWidth);
+      var h = Math.max(400, canvasWrap.clientHeight);
+      canvasHeight = h;
+      svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+
+      var d =
+        cfg.svgPathManual && cfg.svgPathManual.trim()
+          ? cfg.svgPathManual.trim()
+          : buildSmoothPath(activePoints, w, h, cfg.tensionCurva);
+
+      if (pathGuide) pathGuide.setAttribute("d", d);
+      if (pathTrail) pathTrail.setAttribute("d", d);
+      pathMain.setAttribute("d", d);
+
+      if (typeof pathMain.getTotalLength === "function") {
+        totalLen = Math.max(1, pathMain.getTotalLength());
+        pathMain.style.strokeDasharray = String(totalLen);
+        if (pathTrail) pathTrail.style.strokeDasharray = String(totalLen);
+
+        /* Tabla de muestreo monotónica para que la bolita avance en Y sin saltos */
+        yToLengthTable = [];
+        var samples = 160;
+        var maxSeenY = 0;
+        for (var s = 0; s <= samples; s++) {
+          var lenRatio = s / samples;
+          var len = lenRatio * totalLen;
+          var pt = pathMain.getPointAtLength(len);
+          var rawY = Math.min(1, Math.max(0, pt.y / Math.max(1, h)));
+          if (s === 0) rawY = 0;
+          if (s === samples) rawY = 1;
+          if (rawY < maxSeenY) rawY = maxSeenY;
+          maxSeenY = rawY;
+          yToLengthTable.push({ yRatio: rawY, lenRatio: lenRatio });
+        }
+      }
+    }
+
+    function mapScrollProgressToArcRatio(p) {
+      if (scrollCfg.compensarCurvasHorizontales === false || !yToLengthTable.length) {
+        return p;
+      }
+      if (p <= 0) return 0;
+      if (p >= 1) return 1;
+      for (var i = 0; i < yToLengthTable.length - 1; i++) {
+        var a = yToLengthTable[i];
+        var b = yToLengthTable[i + 1];
+        if (p >= a.yRatio && p <= b.yRatio) {
+          var span = b.yRatio - a.yRatio;
+          if (span <= 0.00001) return b.lenRatio;
+          var t = (p - a.yRatio) / span;
+          return a.lenRatio + t * (b.lenRatio - a.lenRatio);
+        }
+      }
+      return 1;
+    }
+
+    /* 4. Cálculo y renderizado del progreso de scroll con inercia */
+    var targetP = 0;
+    var currentP = 0;
+    var rafId = null;
+    var lerpFactor = reduceMotion ? 1 : scrollCfg.suavizado != null ? scrollCfg.suavizado : 0.22;
+    var speedMult = scrollCfg.velocidad != null ? scrollCfg.velocidad : 1.0;
+    var screenAnchor = scrollCfg.alturaEnPantalla != null ? scrollCfg.alturaEnPantalla : 0.56;
+
+    var offOpacity = textosCfg.opacidadApagada != null ? textosCfg.opacidadApagada : 0.24;
+    var offBlur = textosCfg.blurApagada != null ? textosCfg.blurApagada : 0.6;
+    var offColor = textosCfg.colorApagada || "#7d776f";
+    var onColor = textosCfg.colorEncendida || "#383838";
+    var accentColor = textosCfg.colorAcento || "#5b2e44";
+
+    function computeTargetProgress() {
+      if (reduceMotion) return 1;
+      var rect = canvasWrap.getBoundingClientRect();
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      var anchorY = vh * screenAnchor;
+      var totalTravel = Math.max(1, rect.height);
+      var rawP = (anchorY - rect.top) / totalTravel;
+      var scaledP = (rawP - 0.5) * speedMult + 0.5;
+      return Math.min(1, Math.max(0, scaledP));
+    }
+
+    function renderProgress(p) {
+      var arcRatio = mapScrollProgressToArcRatio(p);
+      var dashOffset = totalLen * (1 - arcRatio);
+      pathMain.style.strokeDashoffset = dashOffset.toFixed(1);
+      if (pathTrail) pathTrail.style.strokeDashoffset = dashOffset.toFixed(1);
+
+      if (orbGroup && estilo.mostrarOrbe !== false && typeof pathMain.getPointAtLength === "function") {
+        var pt = pathMain.getPointAtLength(totalLen * Math.min(1, Math.max(0.002, arcRatio)));
+        orbGroup.setAttribute("transform", "translate(" + pt.x.toFixed(1) + ", " + pt.y.toFixed(1) + ")");
+      }
+
+      /* Animar portales y arcos orgánicos de entrada y salida */
+      var curveIntensity = transCfg.intensidadCurvaScroll != null ? transCfg.intensidadCurvaScroll : 1;
+      if (waveTopPath && curveIntensity > 0) {
+        var topDepth = Math.round(28 + (1 - Math.min(1, p * 1.6)) * 88 * curveIntensity);
+        waveTopPath.setAttribute("d", "M0,0 L1440,0 L1440,18 Q720," + topDepth + " 0,18 Z");
+      }
+      if (waveBottomPath && curveIntensity > 0) {
+        var bottomCurve = Math.round(92 - Math.max(0, (p - 0.5) * 2) * 82 * curveIntensity);
+        waveBottomPath.setAttribute("d", "M0,120 L1440,120 L1440,102 Q720," + bottomCurve + " 0,102 Z");
+      }
+
+      var rotDeg = transCfg.rotacionIsotipoGrados != null ? transCfg.rotacionIsotipoGrados : 45;
+      if (portalMark) {
+        portalMark.style.transform = "rotate(" + (p * rotDeg).toFixed(1) + "deg)";
+      }
+      if (portalRing) {
+        portalRing.style.transform = "rotate(" + (-p * rotDeg * 1.4).toFixed(1) + "deg) scale(" + (1 + Math.sin(p * Math.PI) * 0.08).toFixed(3) + ")";
+      }
+      if (portalEnd) {
+        var bloomThreshold = transCfg.umbralFloracionFinal != null ? transCfg.umbralFloracionFinal : 0.9;
+        portalEnd.classList.toggle("is-blooming", p >= bloomThreshold);
+      }
+
+      wordBlocks.forEach(function (block) {
+        var rStart = block.range[0];
+        var rEnd = block.range[1];
+        var localP = (p - rStart) / Math.max(0.01, rEnd - rStart);
+        var count = block.words.length || 1;
+
+        block.words.forEach(function (item, idx) {
+          var threshold = idx / count;
+          var lit = reduceMotion || localP >= threshold;
+          item.el.style.opacity = lit ? "1" : String(offOpacity);
+          item.el.style.color = lit ? (item.accent ? accentColor : onColor) : offColor;
+          item.el.style.filter = lit || offBlur <= 0 ? "none" : "blur(" + offBlur + "px)";
+        });
+      });
+    }
+
+    function tick() {
+      var diff = targetP - currentP;
+      if (Math.abs(diff) > 0.0008) {
+        currentP += diff * lerpFactor;
+        renderProgress(currentP);
+        rafId = window.requestAnimationFrame(tick);
+      } else {
+        currentP = targetP;
+        renderProgress(currentP);
+        rafId = null;
+      }
+    }
+
+    function onScrollOrResize() {
+      targetP = computeTargetProgress();
+      if (!rafId) {
+        rafId = window.requestAnimationFrame(tick);
+      }
+    }
+
+    rebuildGeometry();
+    targetP = computeTargetProgress();
+    currentP = targetP;
+    renderProgress(currentP);
+
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", function () {
+      activePoints = (isMobileQuery.matches && cfg.puntosMobile ? cfg.puntosMobile : cfg.puntos) || activePoints;
+      rebuildGeometry();
+      onScrollOrResize();
+    });
+
+    /* 5. Modo Editor Visual Interactivo (?editar-linea o modoEditor: true) */
+    var editorActive = cfg.modoEditor === true || window.location.search.indexOf("editar-linea") !== -1;
+    if (editorActive) {
+      var handles = [];
+      function renderHandles() {
+        handles.forEach(function (h) {
+          h.remove();
+        });
+        handles = [];
+        activePoints.forEach(function (pt, idx) {
+          var h = document.createElement("div");
+          h.className = "sutra-editor-handle";
+          h.textContent = String(idx + 1);
+          h.title = "Arrastrar punto " + (idx + 1) + " (Shift+Clic para eliminar)";
+          h.style.left = pt.x + "%";
+          h.style.top = pt.y + "%";
+
+          h.addEventListener("pointerdown", function (ev) {
+            if (ev.shiftKey && activePoints.length > 2) {
+              activePoints.splice(idx, 1);
+              rebuildGeometry();
+              renderProgress(currentP);
+              renderHandles();
+              return;
+            }
+            ev.preventDefault();
+            h.setPointerCapture(ev.pointerId);
+            function onMove(moveEv) {
+              var r = section.getBoundingClientRect();
+              var nx = ((moveEv.clientX - r.left) / r.width) * 100;
+              var ny = ((moveEv.clientY - r.top) / r.height) * 100;
+              pt.x = Math.round(Math.min(98, Math.max(2, nx)));
+              pt.y = Math.round(Math.min(100, Math.max(0, ny)));
+              h.style.left = pt.x + "%";
+              h.style.top = pt.y + "%";
+              rebuildGeometry();
+              renderProgress(currentP);
+            }
+            function onUp() {
+              h.removeEventListener("pointermove", onMove);
+              h.removeEventListener("pointerup", onUp);
+            }
+            h.addEventListener("pointermove", onMove);
+            h.addEventListener("pointerup", onUp);
+          });
+
+          section.appendChild(h);
+          handles.push(h);
+        });
+      }
+
+      section.addEventListener("dblclick", function (ev) {
+        if (ev.target.closest(".sutra-editor-handle")) return;
+        var r = section.getBoundingClientRect();
+        var nx = Math.round(((ev.clientX - r.left) / r.width) * 100);
+        var ny = Math.round(((ev.clientY - r.top) / r.height) * 100);
+        activePoints.push({ x: nx, y: ny });
+        activePoints.sort(function (a, b) {
+          return a.y - b.y;
+        });
+        rebuildGeometry();
+        renderProgress(currentP);
+        renderHandles();
+      });
+
+      var bar = document.createElement("div");
+      bar.className = "sutra-editor-bar";
+      bar.innerHTML =
+        '<span>Editor de Línea Viva (doble clic suma punto · Shift+clic borra)</span><button type="button">Copiar puntos</button>';
+      var copyBtn = $("button", bar);
+      copyBtn.addEventListener("click", function () {
+        var formatted =
+          "puntos: [\n" +
+          activePoints
+            .map(function (pt, i) {
+              return "    { x: " + pt.x + ", y: " + pt.y + " }" + (i < activePoints.length - 1 ? "," : "");
+            })
+            .join("\n") +
+          "\n  ],";
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(formatted);
+        }
+        copyBtn.textContent = "¡Copiado!";
+        window.setTimeout(function () {
+          copyBtn.textContent = "Copiar puntos";
+        }, 1800);
+      });
+      document.body.appendChild(bar);
+      renderHandles();
+    }
+  }
+
   initSharedLayout();
   initAnalytics();
   initTracking();
@@ -1085,5 +1564,6 @@
   initSchedule();
   initFaq();
   initGuideModals();
+  initSutraLine();
   initHeroVideo();
 })();

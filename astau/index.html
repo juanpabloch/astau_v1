@@ -186,16 +186,89 @@
       </div>
     </section>
 
-    <section class="section section--surface" aria-labelledby="conceptos-titulo">
+    <section class="section section--surface sutra-section" aria-labelledby="conceptos-titulo" data-sutra-section>
+      <h2 class="sr-only" id="conceptos-titulo">¿Qué es ASTAU?</h2>
+
+      <!-- Transición orgánica superior (Arco que respira con el scroll + Portal de Origen) -->
+      <div class="sutra-wave sutra-wave--top" aria-hidden="true">
+        <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+          <path data-sutra-wave-top fill="var(--c-bg)" d="M0,0 L1440,0 L1440,30 Q720,120 0,30 Z" />
+        </svg>
+      </div>
+
+      <div class="sutra-portal sutra-portal--start" aria-hidden="true" data-sutra-portal-start>
+        <span class="sutra-portal__stem sutra-portal__stem--in"></span>
+        <div class="sutra-portal__medallion">
+          <span class="sutra-portal__ring"></span>
+          <img class="sutra-portal__mark" src="../assets/brand/isotipo-color.svg" alt="" width="36" height="36">
+        </div>
+      </div>
+
+      <!-- Lienzo SVG de la Línea Viva (configurable en assets/js/linea-sutra.config.js) -->
+      <div class="sutra-canvas" aria-hidden="true" data-sutra-canvas>
+        <svg class="sutra-svg" data-sutra-svg fill="none">
+          <defs>
+            <filter id="sutra-orb-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="5" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+          <path data-sutra-guide />
+          <path data-sutra-trail />
+          <path data-sutra-main />
+          <g data-sutra-orb filter="url(#sutra-orb-glow)">
+            <circle data-sutra-orb-halo />
+            <circle data-sutra-orb-dot />
+            <circle data-sutra-orb-core />
+          </g>
+        </svg>
+      </div>
+
+      <div class="wrap grid sutra-journey">
+        <article class="sutra-step sutra-step--1">
+          <p class="label sutra-step__label">01 · El propósito</p>
+          <p class="sutra-step__copy" data-sutra-text="0">
+            ASTAU nace con el propósito de acompañar, a través de la práctica consciente del yoga y la meditación, <em class="sutra-accent">procesos de exploración, dedicación y transformación personal.</em>
+          </p>
+        </article>
+
+        <article class="sutra-step sutra-step--2">
+          <p class="label sutra-step__label">02 · El espacio</p>
+          <p class="sutra-step__copy sutra-step__copy--quote" data-sutra-text="1">
+            Un espacio íntimo para encontrar tu ritmo, <em class="sutra-accent">conectar con el cuerpo, la respiración y el momento presente.</em>
+          </p>
+        </article>
+
+        <article class="sutra-step sutra-step--3">
+          <p class="label sutra-step__label">03 · El acompañamiento</p>
+          <p class="sutra-step__copy" data-sutra-text="2">
+            Nuestro equipo guía y acompaña de manera personalizada cada recorrido con <em class="sutra-accent">atención, cuidado y respeto.</em>
+          </p>
+        </article>
+      </div>
+
+      <!-- Portal de cierre (Florece cuando llega el orbe y tiende el puente hacia Guías) -->
+      <div class="sutra-portal sutra-portal--end" aria-hidden="true" data-sutra-portal-end>
+        <div class="sutra-portal__bloom">
+          <span class="sutra-portal__ripple"></span>
+          <span class="sutra-portal__ripple sutra-portal__ripple--delay"></span>
+          <span class="sutra-portal__node"></span>
+        </div>
+        <span class="sutra-portal__stem sutra-portal__stem--out"></span>
+      </div>
+
+      <!-- Transición orgánica inferior hacia la sección Guías -->
+      <div class="sutra-wave sutra-wave--bottom" aria-hidden="true">
+        <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+          <path data-sutra-wave-bottom fill="var(--c-bg)" d="M0,120 L1440,120 L1440,85 Q720,0 0,85 Z" />
+        </svg>
+      </div>
+
+      <!-- Estructura anterior comentada como referencia:
       <div class="wrap grid">
         <div class="section-head section-head--full">
           <p class="label reveal">¿Qué es ASTAU?</p>
-          <h2 class="h2 reveal" id="conceptos-titulo">Práctica consciente</h2>
-        </div>
-        <div class="page-head__text prose reveal">
-          <p>ASTAU nace con el propósito de acompañar, a través de la práctica consciente del yoga y la meditación, procesos de exploración, dedicación y transformación personal.</p>
-          <p>Un espacio íntimo para encontrar tu ritmo, conectar con el cuerpo, la respiración y el momento presente.</p> 
-          <p>Nuestro equipo guía y acompaña de manera personalizada cada recorrido con atención, cuidado y respeto.</p>
+          <h2 class="h2 reveal">Práctica consciente</h2>
         </div>
         <div class="concepts-col">
           <dl class="concepts">
@@ -207,6 +280,7 @@
           </dl>
         </div>
       </div>
+      -->
     </section>
 
     <section class="section" aria-label="Guías">
@@ -430,6 +504,7 @@
   </footer>
 
   <script src="../assets/js/config.js" defer></script>
+  <script src="../assets/js/linea-sutra.config.js" defer></script>
   <script src="../assets/js/main.js" defer></script>
 </body>
 </html>
