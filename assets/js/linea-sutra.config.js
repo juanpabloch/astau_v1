@@ -38,11 +38,14 @@ window.ASTAU_LINEA_CONFIG = {
   /* Recorrido en Desktop (>= 768px):
      Pensado para abrazar los 3 textos por los espacios de aire sin tapar la lectura */
   puntos: [
-    { x: 51, y: 2 },   // 1. Nace arriba en el centro (conecta con el Hero)
-    { x: 29, y: 24 },
-    { x: 66, y: 53 },
-    { x: 36, y: 79 },
-    { x: 50, y: 98 }  // 7. Desemboca verticalmente en el centro hacia "Guías"
+    { x: 50, y: 3 },
+    { x: 23, y: 10 },
+    { x: 25, y: 27 },
+    { x: 40, y: 37 },
+    { x: 80, y: 44 },
+    { x: 78, y: 62 },
+    { x: 28, y: 76 },
+    { x: 50, y: 95 }
   ],
 
   /* Recorrido en Mobile (< 768px):

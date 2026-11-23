@@ -672,36 +672,38 @@
 
     if (tabs.length) selectTab(tabs[0], false);
 
-    /* Selector de día (mobile) */
+    /* Grilla semanal y barra de progreso horizontal (mobile) */
     var sched = $(".sched", ui);
     var days = $$(".day", sched);
-    var dayButtons = $$(".days__btn", ui);
+    var scrollBar = $(".sched__scrollbar", ui);
+    var scrollThumb = $(".sched__scrollbar-thumb", ui);
     var order = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
 
-    function selectDay(name) {
-      days.forEach(function (day) {
-        day.classList.toggle("is-active", day.dataset.dia === name);
-      });
-      dayButtons.forEach(function (btn) {
-        btn.setAttribute("aria-pressed", btn.dataset.dia === name ? "true" : "false");
-      });
-    }
-
-    dayButtons.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        selectDay(btn.dataset.dia);
-        track("horarios_dia", { dia: btn.dataset.dia });
-      });
-    });
-
     var today = order[new Date().getDay()];
-    var hasToday = days.some(function (day) {
-      return day.dataset.dia === today;
-    });
     days.forEach(function (day) {
       day.classList.toggle("is-today", day.dataset.dia === today);
     });
-    selectDay(hasToday ? today : "lunes");
+
+    function updateScrollIndicator() {
+      if (!sched || !scrollBar || !scrollThumb) return;
+      var maxScroll = sched.scrollWidth - sched.clientWidth;
+      if (maxScroll <= 2) {
+        scrollBar.hidden = true;
+        return;
+      }
+      scrollBar.hidden = false;
+      var ratio = sched.clientWidth / sched.scrollWidth;
+      var thumbPct = Math.max(ratio * 100, 18);
+      var progress = Math.min(Math.max(sched.scrollLeft / maxScroll, 0), 1);
+      scrollThumb.style.width = thumbPct + "%";
+      scrollThumb.style.insetInlineStart = progress * (100 - thumbPct) + "%";
+    }
+
+    if (sched) {
+      sched.addEventListener("scroll", updateScrollIndicator, { passive: true });
+      window.addEventListener("resize", updateScrollIndicator, { passive: true });
+      updateScrollIndicator();
+    }
 
     /* Filtro por práctica */
     var chips = $$(".chip", ui);
@@ -729,6 +731,20 @@
       });
       sched.classList.toggle("is-filtered", !!active);
       ui.classList.toggle("is-filtered", !!active);
+
+      if (sched && !desktop.matches) {
+        if (active) {
+          var firstMatchDay = $(".day.has-match .day__name", sched);
+          var stickyBand = $(".sched__band", sched);
+          if (firstMatchDay) {
+            var stickyW = stickyBand ? stickyBand.offsetWidth + 8 : 72;
+            var targetLeft = Math.max(firstMatchDay.offsetLeft - stickyW, 0);
+            sched.scrollTo({ left: targetLeft, behavior: reduceMotion ? "auto" : "smooth" });
+          }
+        } else {
+          sched.scrollTo({ left: 0, behavior: reduceMotion ? "auto" : "smooth" });
+        }
+      }
     }
 
     chips.forEach(function (chip) {

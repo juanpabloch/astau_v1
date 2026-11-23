@@ -458,15 +458,11 @@
             <button class="chip" type="button" data-filter="yoga-embarazo" aria-pressed="false">Yoga &amp; Embarazo</button>
             <button class="chip" type="button" data-filter="yoga-maternidad" aria-pressed="false">Yoga &amp; Maternidad</button>
           </div>
-          <div class="days" role="group" aria-label="Elegir día">
-            <button class="days__btn" type="button" data-dia="lunes" aria-pressed="false"><span aria-hidden="true">Lun</span><span class="sr-only">Lunes</span></button>
-            <button class="days__btn" type="button" data-dia="martes" aria-pressed="false"><span aria-hidden="true">Mar</span><span class="sr-only">Martes</span></button>
-            <button class="days__btn" type="button" data-dia="miercoles" aria-pressed="false"><span aria-hidden="true">Mié</span><span class="sr-only">Miércoles</span></button>
-            <button class="days__btn" type="button" data-dia="jueves" aria-pressed="false"><span aria-hidden="true">Jue</span><span class="sr-only">Jueves</span></button>
-            <button class="days__btn" type="button" data-dia="viernes" aria-pressed="false"><span aria-hidden="true">Vie</span><span class="sr-only">Viernes</span></button>
-            <button class="days__btn" type="button" data-dia="sabado" aria-pressed="false"><span aria-hidden="true">Sáb</span><span class="sr-only">Sábado</span></button>
+          <div class="sched__hint" aria-hidden="true">
+            <span>Franja fija</span>
+            <span>Deslizá para ver Lun → Sáb →</span>
           </div>
-          <div class="sched">
+          <div class="sched" tabindex="0" role="region" aria-labelledby="horarios-titulo">
           <p class="sched__band" data-banda="manana" aria-hidden="true">Mañana</p>
           <p class="sched__band" data-banda="tarde" aria-hidden="true">Tarde</p>
           <p class="sched__band" data-banda="noche" aria-hidden="true">Noche</p>
@@ -726,6 +722,9 @@
             <div class="band is-empty" data-banda="tarde"></div>
             <div class="band is-empty" data-banda="noche"></div>
           </section>
+          </div>
+          <div class="sched__scrollbar" aria-hidden="true">
+            <div class="sched__scrollbar-thumb"></div>
           </div>
           <div class="sched__notes">
             <p>Los días que hay meditación, la clase de Ashtanga Yoga finaliza a las 20 h.</p>

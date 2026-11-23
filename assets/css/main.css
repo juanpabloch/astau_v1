@@ -1256,44 +1256,55 @@ a:hover .media img,
   color: var(--c-bg);
 }
 
-.days {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  margin-bottom: var(--s-3);
-  border: 1px solid var(--c-line);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.days__btn {
-  min-height: 3rem;
-  font-size: var(--fs-label);
+.sched__hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+  color: var(--c-accent);
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
-.days__btn + .days__btn {
-  border-left: 1px solid var(--c-line);
-}
-
-.days__btn[aria-pressed="true"] {
-  background: var(--c-text);
-  color: var(--c-bg);
-}
-
+/* Grilla: franjas como filas fijas a la izquierda, días como columnas */
 .sched {
+  position: relative;
   display: grid;
-  gap: var(--s-4);
+  grid-template-columns: 4.1rem repeat(6, minmax(7.75rem, 1fr));
+  column-gap: 0.5rem;
+  row-gap: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
-.sched__band {
+.sched::-webkit-scrollbar {
   display: none;
 }
 
+.sched::before {
+  content: "";
+  grid-column: 1;
+  grid-row: 1;
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 2;
+  background: var(--c-surface);
+  box-shadow: 0.35rem 0 0 var(--c-surface);
+}
+
+.day {
+  display: contents;
+}
+
 .day__name {
-  padding-bottom: 0.9rem;
+  grid-row: 1;
+  align-self: end;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--c-text);
   font-size: var(--fs-label);
   font-weight: 500;
@@ -1310,20 +1321,63 @@ a:hover .media img,
   content: " · Hoy";
 }
 
+.sched__band,
 .band {
-  padding-top: var(--s-3);
+  padding-block: var(--s-2) var(--s-3);
+  border-top: 1px solid var(--c-line);
+}
+
+.sched__band {
+  display: block;
+  grid-column: 1;
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 2;
+  padding-inline-end: 0.35rem;
+  background: var(--c-surface);
+  box-shadow: 0.35rem 0 0 var(--c-surface);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sched__band[data-banda="manana"],
+.band[data-banda="manana"] {
+  grid-row: 2;
+  border-top: 0;
+}
+
+.sched__band[data-banda="tarde"],
+.band[data-banda="tarde"] {
+  grid-row: 3;
+}
+
+.sched__band[data-banda="noche"],
+.band[data-banda="noche"] {
+  grid-row: 4;
 }
 
 .band.is-empty {
-  display: none;
+  display: block;
 }
 
+.day:nth-of-type(1) > * { grid-column: 2; }
+.day:nth-of-type(2) > * { grid-column: 3; }
+.day:nth-of-type(3) > * { grid-column: 4; }
+.day:nth-of-type(4) > * { grid-column: 5; }
+.day:nth-of-type(5) > * { grid-column: 6; }
+.day:nth-of-type(6) > * { grid-column: 7; }
+
+/* El nombre de la franja ya está en la primera columna */
 .band__name {
-  margin-bottom: 0.75rem;
-  font-size: var(--fs-label);
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .band ul {
@@ -1344,10 +1398,15 @@ a:hover .media img,
   flex-direction: column;
   gap: 0.2rem;
   width: 100%;
-  height: 10.5rem;
-  padding: 1.1rem 1.15rem;
+  min-height: 9.75rem;
+  padding: 0.7rem 0.75rem 0.75rem;
   background: var(--c-bg);
   transition: box-shadow var(--t-fast) var(--ease);
+}
+
+.med .slot {
+  height: 10.5rem;
+  padding: 1.1rem 1.15rem;
 }
 
 .slot__link:hover,
@@ -1360,15 +1419,15 @@ a:hover .media img,
 }
 
 .slot__time {
-  font-size: var(--fs-small);
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
 }
 
 .slot__name {
-  font-size: 1.125rem;
+  font-size: 0.96875rem;
   font-weight: 500;
   letter-spacing: -0.01em;
-  line-height: 1.25;
+  line-height: 1.22;
   transition: color var(--t-fast) var(--ease);
 }
 
@@ -1379,8 +1438,8 @@ a:hover .media img,
 
 .slot__info,
 .slot__note {
-  font-size: var(--fs-small);
-  line-height: 1.4;
+  font-size: 0.8125rem;
+  line-height: 1.35;
 }
 
 .slot__cta {
@@ -1388,13 +1447,13 @@ a:hover .media img,
   margin-top: auto;
   padding-top: 0.4rem;
   color: var(--c-accent);
-  font-size: var(--fs-label);
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-@media (hover: hover) and (pointer: fine) {
+@media (min-width: 64rem) and (hover: hover) and (pointer: fine) {
   .slot__cta {
     opacity: 0;
     transition: opacity var(--t-fast) var(--ease);
@@ -1408,6 +1467,23 @@ a:hover .media img,
 
 .slot.is-dim {
   opacity: 0.25;
+}
+
+.sched__scrollbar {
+  position: relative;
+  height: 0.25rem;
+  margin-top: var(--s-2);
+  border-radius: 999px;
+  background: rgb(192 184 177 / 0.65);
+  overflow: hidden;
+}
+
+.sched__scrollbar-thumb {
+  position: relative;
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--c-accent);
 }
 
 .sched__notes {
@@ -1434,39 +1510,9 @@ a:hover .media img,
   text-transform: uppercase;
 }
 
-@media (max-width: 63.99rem) {
-  .js .sched .day {
-    display: none;
-  }
-
-  .js .sched .day.is-active {
-    display: block;
-  }
-
-  .js .sched.is-filtered .day {
-    display: none;
-  }
-
-  .js .sched.is-filtered .day.has-match {
-    display: block;
-  }
-
-  .js .sched.is-filtered .slot.is-dim {
-    display: none;
-  }
-
-  .js .sched.is-filtered .band:not(.has-match) {
-    display: none;
-  }
-
-  .js .sched-ui.is-filtered .days {
-    display: none;
-  }
-}
-
-html:not(.js) .days,
 html:not(.js) .chips,
-html:not(.js) .tabs {
+html:not(.js) .tabs,
+html:not(.js) .sched__scrollbar {
   display: none;
 }
 
@@ -2562,7 +2608,8 @@ html:not(.js) .tabs {
     grid-column: 1 / span 6;
   }
 
-  .days {
+  .sched__hint,
+  .sched__scrollbar {
     display: none;
   }
 
@@ -2570,69 +2617,16 @@ html:not(.js) .tabs {
   .sched {
     grid-template-columns: 5.5rem repeat(6, minmax(0, 1fr));
     column-gap: clamp(0.5rem, 1vw, 1rem);
-    row-gap: 0;
-  }
-
-  .day {
-    display: contents;
+    overflow-x: visible;
   }
 
   .day__name {
-    grid-row: 1;
-    align-self: end;
-  }
-
-  .sched__band,
-  .band {
-    padding-block: var(--s-2) var(--s-3);
-    border-top: 1px solid var(--c-line);
+    padding-bottom: 0.9rem;
   }
 
   .sched__band {
-    display: block;
-    grid-column: 1;
     font-size: var(--fs-label);
-    font-weight: 500;
     letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .sched__band[data-banda="manana"],
-  .band[data-banda="manana"] {
-    grid-row: 2;
-    border-top: 0;
-  }
-
-  .sched__band[data-banda="tarde"],
-  .band[data-banda="tarde"] {
-    grid-row: 3;
-  }
-
-  .sched__band[data-banda="noche"],
-  .band[data-banda="noche"] {
-    grid-row: 4;
-  }
-
-  .band.is-empty {
-    display: block;
-  }
-
-  .day:nth-of-type(1) > * { grid-column: 2; }
-  .day:nth-of-type(2) > * { grid-column: 3; }
-  .day:nth-of-type(3) > * { grid-column: 4; }
-  .day:nth-of-type(4) > * { grid-column: 5; }
-  .day:nth-of-type(5) > * { grid-column: 6; }
-  .day:nth-of-type(6) > * { grid-column: 7; }
-
-  /* El nombre de la franja ya está en la primera columna */
-  .band__name {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
   }
 
   .slot__link {
@@ -2640,8 +2634,18 @@ html:not(.js) .tabs {
     padding: 0.75rem 0.85rem 0.8rem;
   }
 
+  .slot__time,
+  .slot__info,
+  .slot__note {
+    font-size: var(--fs-small);
+  }
+
   .slot__name {
     font-size: 1.0625rem;
+  }
+
+  .slot__cta {
+    font-size: var(--fs-label);
   }
 
   .med {
@@ -2863,7 +2867,8 @@ html:not(.js) .tabs {
   .menu,
   .closing,
   .chips,
-  .days,
+  .sched__hint,
+  .sched__scrollbar,
   .tabs {
     display: none !important;
   }
@@ -2873,7 +2878,6 @@ html:not(.js) .tabs {
     transform: none;
   }
 
-  .js .sched .day,
   .js .panel {
     display: block !important;
   }
