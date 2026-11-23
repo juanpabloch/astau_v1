@@ -435,13 +435,6 @@
     if (sched && Array.isArray(horarios.yoga)) {
       sched.replaceChildren();
 
-      BANDAS_META.forEach(function (banda) {
-        var p = el("p", "sched__band", banda.label);
-        p.setAttribute("data-banda", banda.id);
-        p.setAttribute("aria-hidden", "true");
-        sched.appendChild(p);
-      });
-
       DIAS_META.forEach(function (diaMeta) {
         var daySection = el("section", "day");
         daySection.setAttribute("data-dia", diaMeta.id);
@@ -735,10 +728,8 @@
       if (sched && !desktop.matches) {
         if (active) {
           var firstMatchDay = $(".day.has-match .day__name", sched);
-          var stickyBand = $(".sched__band", sched);
           if (firstMatchDay) {
-            var stickyW = stickyBand ? stickyBand.offsetWidth + 8 : 72;
-            var targetLeft = Math.max(firstMatchDay.offsetLeft - stickyW, 0);
+            var targetLeft = Math.max(firstMatchDay.offsetLeft, 0);
             sched.scrollTo({ left: targetLeft, behavior: reduceMotion ? "auto" : "smooth" });
           }
         } else {

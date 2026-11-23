@@ -1256,24 +1256,11 @@ a:hover .media img,
   color: var(--c-bg);
 }
 
-.sched__hint {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-2);
-  margin-bottom: var(--s-2);
-  color: var(--c-accent);
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-/* Grilla: franjas como filas fijas a la izquierda, días como columnas */
+/* Grilla: franjas como filas, días como columnas */
 .sched {
   position: relative;
   display: grid;
-  grid-template-columns: 4.1rem repeat(6, minmax(7.75rem, 1fr));
+  grid-template-columns: repeat(6, minmax(8.5rem, 1fr));
   column-gap: 0.5rem;
   row-gap: 0;
   overflow-x: auto;
@@ -1284,17 +1271,6 @@ a:hover .media img,
 
 .sched::-webkit-scrollbar {
   display: none;
-}
-
-.sched::before {
-  content: "";
-  grid-column: 1;
-  grid-row: 1;
-  position: sticky;
-  inset-inline-start: 0;
-  z-index: 2;
-  background: var(--c-surface);
-  box-shadow: 0.35rem 0 0 var(--c-surface);
 }
 
 .day {
@@ -1321,39 +1297,20 @@ a:hover .media img,
   content: " · Hoy";
 }
 
-.sched__band,
 .band {
   padding-block: var(--s-2) var(--s-3);
   border-top: 1px solid var(--c-line);
 }
 
-.sched__band {
-  display: block;
-  grid-column: 1;
-  position: sticky;
-  inset-inline-start: 0;
-  z-index: 2;
-  padding-inline-end: 0.35rem;
-  background: var(--c-surface);
-  box-shadow: 0.35rem 0 0 var(--c-surface);
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.sched__band[data-banda="manana"],
 .band[data-banda="manana"] {
   grid-row: 2;
   border-top: 0;
 }
 
-.sched__band[data-banda="tarde"],
 .band[data-banda="tarde"] {
   grid-row: 3;
 }
 
-.sched__band[data-banda="noche"],
 .band[data-banda="noche"] {
   grid-row: 4;
 }
@@ -1362,12 +1319,12 @@ a:hover .media img,
   display: block;
 }
 
-.day:nth-of-type(1) > * { grid-column: 2; }
-.day:nth-of-type(2) > * { grid-column: 3; }
-.day:nth-of-type(3) > * { grid-column: 4; }
-.day:nth-of-type(4) > * { grid-column: 5; }
-.day:nth-of-type(5) > * { grid-column: 6; }
-.day:nth-of-type(6) > * { grid-column: 7; }
+.day:nth-of-type(1) > * { grid-column: 1; }
+.day:nth-of-type(2) > * { grid-column: 2; }
+.day:nth-of-type(3) > * { grid-column: 3; }
+.day:nth-of-type(4) > * { grid-column: 4; }
+.day:nth-of-type(5) > * { grid-column: 5; }
+.day:nth-of-type(6) > * { grid-column: 6; }
 
 /* El nombre de la franja ya está en la primera columna */
 .band__name {
@@ -2608,25 +2565,19 @@ html:not(.js) .sched__scrollbar {
     grid-column: 1 / span 6;
   }
 
-  .sched__hint,
   .sched__scrollbar {
     display: none;
   }
 
   /* Grilla: franjas como filas, días como columnas */
   .sched {
-    grid-template-columns: 5.5rem repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     column-gap: clamp(0.5rem, 1vw, 1rem);
     overflow-x: visible;
   }
 
   .day__name {
     padding-bottom: 0.9rem;
-  }
-
-  .sched__band {
-    font-size: var(--fs-label);
-    letter-spacing: 0.14em;
   }
 
   .slot__link {
