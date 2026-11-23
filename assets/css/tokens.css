@@ -22,10 +22,10 @@
 
 :root {
   /* Color */
-  --c-bg: #eeeae4;        /* Pantone 7527 C */
+  --c-bg: #eeeae4ff;      /* Pantone 7527 C */
   --c-accent: #5b2e44;    /* Pantone 7645 C */
   --c-text: #383838;      /* Pantone 447 C */
-  --c-surface: #d6d1ca;   /* Pantone Warm Gray 1 C */
+  --c-surface: #cac5bd98; /* Pantone Warm Gray 1 C */
   --c-line: #c0b8b1;      /* Pantone Warm Gray 3 C */
   --c-muted: #7d776f;     /* Pantone Warm Gray 9 C · solo texto de 24 px o más */
   --c-sage: #b3b7ae;      /* Pantone 421 C */
@@ -64,4 +64,15 @@
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --t-fast: 300ms;
   --t-slow: 900ms;
+}
+
+/* Paleta de Clases (sin Pantone 7645 C #5b2e44) */
+body[data-page="clases"] {
+  --c-bg: #eeeae4ff;      /* Pantone 7527 C */
+  --c-surface: #cac5bd98; /* Pantone Warm Gray 1 C */
+  --c-line: #c0b8b1;      /* Pantone Warm Gray 3 C */
+  --c-muted: #7d776f;     /* Pantone Warm Gray 9 C */
+  --c-sage: #b3b7ae;      /* Pantone 421 C */
+  --c-text: #383838;      /* Pantone 447 C */
+  --c-accent: #7d776f;    /* Reemplaza Pantone 7645 C por Warm Gray 9 C */
 }
