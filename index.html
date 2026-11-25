@@ -171,7 +171,9 @@
         <div class="hero__content">
           <p class="label reveal">Yoga &amp; Meditación</p>
           <!-- <h1 class="display reveal" id="hero-titulo">Yoga &amp; Meditación</h1> -->
-          <h1 class="reveal" id="hero-titulo">Una práctica personal que se construye con guía y en comunidad.</h1>
+          <h1 class="reveal" id="hero-titulo">
+            Una práctica personal<br>que se construye con guía<br>y en comunidad.
+          </h1>
           <!-- <p class="hero__lead reveal">Una práctica personal que se construye con guía y en comunidad.</p> -->
           <!-- <p class="hero__mantra reveal"><span>Respirar.</span> <span>Observar.</span> <span>Estar presente.</span></p> -->
           <!-- <div class="actions reveal">
@@ -237,9 +239,78 @@
     </section>
 
 
-    <section class="section section--surface manifesto" aria-labelledby="manifiesto-titulo">
+    <section class="section section--surface sutra-section" aria-labelledby="manifiesto-titulo" data-sutra-section>
+      <h2 class="sr-only" id="manifiesto-titulo">La práctica</h2>
+
+      <div class="sutra-portal sutra-portal--start" aria-hidden="true" data-sutra-portal-start>
+        <span class="sutra-portal__stem sutra-portal__stem--in"></span>
+        <div class="sutra-portal__medallion">
+          <span class="sutra-portal__ring"></span>
+          <img class="sutra-portal__mark" src="assets/brand/isotipo-color.svg" alt="" width="36" height="36">
+        </div>
+      </div>
+
+      <!-- Lienzo SVG de la Línea Viva (configurable en assets/js/linea-sutra.config.js) -->
+      <div class="sutra-canvas" aria-hidden="true" data-sutra-canvas>
+        <svg class="sutra-svg" data-sutra-svg fill="none">
+          <defs>
+            <filter id="sutra-orb-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="5" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+          <path data-sutra-guide />
+          <path data-sutra-trail />
+          <path data-sutra-main />
+          <g data-sutra-orb filter="url(#sutra-orb-glow)">
+            <circle data-sutra-orb-halo />
+            <circle data-sutra-orb-dot />
+            <circle data-sutra-orb-core />
+          </g>
+        </svg>
+      </div>
+
+      <div class="wrap grid sutra-journey">
+        <article class="sutra-step sutra-step--1">
+          <p class="sutra-step__copy" data-sutra-text="0">
+            El mundo pide velocidad.<br><em class="sutra-accent">La práctica pide presencia.</em>
+          </p>
+        </article>
+
+        <article class="sutra-step sutra-step--2">
+          <p class="sutra-step__copy" data-sutra-text="1">
+            El mundo pide rendimiento.<br><em class="sutra-accent">La práctica propone observación.</em>
+          </p>
+        </article>
+
+        <article class="sutra-step sutra-step--3">
+          <p class="sutra-step__copy" data-sutra-text="2">
+            El mundo busca resultados.<br><em class="sutra-accent">La práctica trabaja sobre el proceso.</em>
+          </p>
+        </article>
+
+        <article class="sutra-step sutra-step--4">
+          <p class="sutra-step__copy sutra-step__copy--quote" data-sutra-text="3">
+            El mundo está lleno de estímulos.<br><em class="sutra-accent">En ASTAU creamos un espacio para que vuelvas a conectar con vos.</em>
+          </p>
+          <div class="sutra-step__cta">
+            <a class="link" href="astau/">Conocé más</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- Portal de cierre (Florece cuando llega el orbe) -->
+      <div class="sutra-portal sutra-portal--end" aria-hidden="true" data-sutra-portal-end>
+        <div class="sutra-portal__bloom">
+          <span class="sutra-portal__ripple"></span>
+          <span class="sutra-portal__ripple sutra-portal__ripple--delay"></span>
+          <span class="sutra-portal__node"></span>
+        </div>
+        <span class="sutra-portal__stem sutra-portal__stem--out"></span>
+      </div>
+
+      <!-- Estructura anterior comentada como referencia:
       <div class="wrap grid">
-        <h2 class="sr-only" id="manifiesto-titulo">La práctica</h2>
         <ul class="manifesto__list">
           <li class="manifesto__pair">
             <span class="manifesto__world">El mundo pide velocidad.</span>
@@ -264,6 +335,7 @@
           </div>
         </div>
       </div>
+      -->
     </section>
 
 
@@ -374,14 +446,45 @@
         </div>
         <div class="footer__col">
           <h2 class="label">Ubicación</h2>
-          <p>Austria 2272, 1° A<br>Recoleta, CABA</p>
-          <p><a href="https://maps.app.goo.gl/wTtZTwhwu7xZctVu7" target="_blank" rel="noopener" data-track="clic_maps">Cómo llegar</a></p>
+          <p class="footer__item">
+            <svg class="footer__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10Z"/>
+              <circle cx="12" cy="11" r="2.2"/>
+            </svg>
+            <span>Austria 2272, 1° A<br>Recoleta, CABA</span>
+          </p>
+          <p><a href="https://maps.app.goo.gl/wTtZTwhwu7xZctVu7" target="_blank" rel="noopener" data-track="clic_maps">Ver mapa</a></p>
         </div>
         <div class="footer__col">
           <h2 class="label">Contacto</h2>
-          <p><a href="https://wa.me/5491137042408?text=Hola%2C%20quiero%20agendar%20una%20pr%C3%A1ctica%20en%20ASTAU." target="_blank" rel="noopener" data-track="clic_whatsapp" data-ubicacion="footer">WhatsApp +54 9 11 3704 2408</a></p>
-          <p><a href="https://www.instagram.com/astau.yogastudio/" target="_blank" rel="noopener" data-track="clic_instagram">@astau.yogastudio</a></p>
-          <p><a href="mailto:astauyogastudio@gmail.com" data-track="clic_mail">astauyogastudio@gmail.com</a></p>
+          <p>
+            <a href="https://wa.me/5491137042408?text=Hola%2C%20quiero%20agendar%20una%20pr%C3%A1ctica%20en%20ASTAU." target="_blank" rel="noopener" data-track="clic_whatsapp" data-ubicacion="footer">
+              <svg class="footer__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/>
+                <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/>
+              </svg>
+              <span>WhatsApp +54 9 11 3704 2408</span>
+            </a>
+          </p>
+          <p>
+            <a href="https://www.instagram.com/astau.yogastudio/" target="_blank" rel="noopener" data-track="clic_instagram">
+              <svg class="footer__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>
+              </svg>
+              <span>@astau.yogastudio</span>
+            </a>
+          </p>
+          <p>
+            <a href="mailto:astauyogastudio@gmail.com" data-track="clic_mail">
+              <svg class="footer__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                <path d="m3 7 9 6 9-6"/>
+              </svg>
+              <span>astauyogastudio@gmail.com</span>
+            </a>
+          </p>
         </div>
       </div>
       
@@ -393,6 +496,7 @@
   </footer>
 
   <script src="assets/js/config.js" defer></script>
+  <script src="assets/js/linea-sutra.config.js" defer></script>
   <script src="assets/js/main.js" defer></script>
 </body>
 </html>

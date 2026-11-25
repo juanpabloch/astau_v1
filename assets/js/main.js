@@ -101,14 +101,39 @@
         "</div>" +
         '<div class="footer__col">' +
         '<h2 class="label">Ubicación</h2>' +
-        "<p>Austria 2272, 1° A<br>Recoleta, CABA</p>" +
-        '<p><a href="https://maps.app.goo.gl/wTtZTwhwu7xZctVu7" target="_blank" rel="noopener" data-track="clic_maps">Cómo llegar</a></p>' +
+        '<p class="footer__item">' +
+        '<svg class="footer__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10Z"/>' +
+        '<circle cx="12" cy="11" r="2.2"/>' +
+        "</svg>" +
+        "<span>Austria 2272, 1° A<br>Recoleta, CABA</span>" +
+        "</p>" +
+        '<p><a href="https://maps.app.goo.gl/wTtZTwhwu7xZctVu7" target="_blank" rel="noopener" data-track="clic_maps">Ver mapa</a></p>' +
         "</div>" +
         '<div class="footer__col">' +
         '<h2 class="label">Contacto</h2>' +
-        '<p><a href="' + waHref + '" target="_blank" rel="noopener" data-track="clic_whatsapp" data-ubicacion="footer">WhatsApp +54 9 11 3704 2408</a></p>' +
-        '<p><a href="https://www.instagram.com/astau.yogastudio/" target="_blank" rel="noopener" data-track="clic_instagram">@astau.yogastudio</a></p>' +
-        '<p><a href="mailto:astauyogastudio@gmail.com" data-track="clic_mail">astauyogastudio@gmail.com</a></p>' +
+        '<p><a href="' + waHref + '" target="_blank" rel="noopener" data-track="clic_whatsapp" data-ubicacion="footer">' +
+        '<svg class="footer__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/>' +
+        '<path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/>' +
+        "</svg>" +
+        "<span>WhatsApp +54 9 11 3704 2408</span>" +
+        "</a></p>" +
+        '<p><a href="https://www.instagram.com/astau.yogastudio/" target="_blank" rel="noopener" data-track="clic_instagram">' +
+        '<svg class="footer__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<rect x="3" y="3" width="18" height="18" rx="5"/>' +
+        '<circle cx="12" cy="12" r="4"/>' +
+        '<circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>' +
+        "</svg>" +
+        "<span>@astau.yogastudio</span>" +
+        "</a></p>" +
+        '<p><a href="mailto:astauyogastudio@gmail.com" data-track="clic_mail">' +
+        '<svg class="footer__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<rect x="3" y="5" width="18" height="14" rx="2"/>' +
+        '<path d="m3 7 9 6 9-6"/>' +
+        "</svg>" +
+        "<span>astauyogastudio@gmail.com</span>" +
+        "</a></p>" +
         "</div>" +
         "</div>" +
         '<div class="site-footer__bottom">' +
@@ -1183,13 +1208,20 @@
 
     /* 2. Separar palabras de cada bloque preservando <em class="sutra-accent"> */
     var wordBlocks = [];
-    var defaultRanges = textosCfg.rangos || [
-      [0.02, 0.34],
-      [0.32, 0.66],
-      [0.64, 0.94]
-    ];
+    var textEls = $$("[data-sutra-text]", section);
+    var totalBlocks = textEls.length || 1;
+    var isManifiesto =
+      section.getAttribute("aria-labelledby") === "manifiesto-titulo" || totalBlocks >= 4;
 
-    $$("[data-sutra-text]", section).forEach(function (el, blockIdx) {
+    var defaultRanges =
+      (isManifiesto && textosCfg.rangosManifiesto) ||
+      textosCfg.rangos || [
+        [0.02, 0.34],
+        [0.32, 0.66],
+        [0.64, 0.94]
+      ];
+
+    textEls.forEach(function (el, blockIdx) {
       var stepCard = el.closest(".sutra-step");
       if (stepCard) {
         if (textosCfg.opacidadFondoTexto != null) {
@@ -1214,7 +1246,7 @@
           span.textContent = w;
           el.appendChild(span);
           el.appendChild(document.createTextNode(" "));
-          words.push({ el: span, accent: isAccent });
+          words.push({ el: span, accent: isAccent, lastState: -1 });
         });
       }
 
@@ -1222,28 +1254,56 @@
         if (node.nodeType === 3) {
           pushWordsFromText(node.textContent, false);
         } else if (node.nodeType === 1) {
-          var isAccent = node.classList.contains("sutra-accent") || node.tagName === "EM";
+          if (node.tagName === "BR") {
+            el.appendChild(document.createElement("br"));
+            return;
+          }
+          var isAccent =
+            node.classList.contains("sutra-accent") ||
+            node.tagName === "EM" ||
+            node.tagName === "STRONG";
           pushWordsFromText(node.textContent, isAccent);
         }
       });
 
+      var blockRange;
+      if (totalBlocks === defaultRanges.length && defaultRanges[blockIdx]) {
+        blockRange = defaultRanges[blockIdx];
+      } else {
+        var span = 0.92 / totalBlocks;
+        var r0 = Math.max(0.02, 0.02 + blockIdx * span - (blockIdx > 0 ? 0.02 : 0));
+        var r1 = Math.min(0.94, 0.02 + (blockIdx + 1) * span);
+        blockRange = [r0, r1];
+      }
+
       wordBlocks.push({
         words: words,
-        range: defaultRanges[blockIdx] || [blockIdx * 0.33, (blockIdx + 1) * 0.33]
+        range: blockRange
       });
     });
 
-    /* 3. Generador de curva suave (Catmull-Rom a Cubic Bezier) */
+    /* 3. Generador de curva orgánica (Spline Hermite Monótono en Y / Onda Sinusoidal) */
     var isMobileQuery = window.matchMedia("(max-width: 47.99rem)");
-    var activePoints = (isMobileQuery.matches && cfg.puntosMobile ? cfg.puntosMobile : cfg.puntos) || [
-      { x: 50, y: 0 },
-      { x: 14, y: 12 },
-      { x: 86, y: 32 },
-      { x: 88, y: 50 },
-      { x: 14, y: 66 },
-      { x: 50, y: 84 },
-      { x: 50, y: 100 }
-    ];
+
+    function resolvePoints() {
+      if (isMobileQuery.matches) {
+        if (isManifiesto && cfg.puntosManifiestoMobile) return cfg.puntosManifiestoMobile;
+        if (!isManifiesto && cfg.puntosConceptosMobile) return cfg.puntosConceptosMobile;
+        if (cfg.puntosMobile) return cfg.puntosMobile;
+      }
+      if (isManifiesto && cfg.puntosManifiesto) return cfg.puntosManifiesto;
+      if (!isManifiesto && cfg.puntosConceptos) return cfg.puntosConceptos;
+      return (
+        cfg.puntos || [
+          { x: 50, y: 0 },
+          { x: 65, y: 24 },
+          { x: 35, y: 58 },
+          { x: 50, y: 100 }
+        ]
+      );
+    }
+
+    var activePoints = resolvePoints();
 
     function buildSmoothPath(pts, width, height, tension) {
       if (!pts || !pts.length) return "";
@@ -1251,7 +1311,7 @@
         return { x: (pt.x / 100) * width, y: (pt.y / 100) * height };
       });
       if (p.length === 1) return "M " + p[0].x + " " + p[0].y;
-      var t = tension != null ? tension : 0.36;
+      var t = tension != null ? tension : 0.45;
       if (t <= 0) {
         return p
           .map(function (pt, idx) {
@@ -1259,29 +1319,42 @@
           })
           .join(" ");
       }
-      var k = (t != null ? t : 0.36) * 0.5;
+
+      var n = p.length;
+      var m = new Array(n);
+      /* Entrada y salida estrictamente verticales en los portales superior e inferior */
+      m[0] = 0;
+      m[n - 1] = 0;
+
+      for (var j = 1; j < n - 1; j++) {
+        var dy0 = Math.max(1, p[j].y - p[j - 1].y);
+        var dy1 = Math.max(1, p[j + 1].y - p[j].y);
+        var s0 = (p[j].x - p[j - 1].x) / dy0;
+        var s1 = (p[j + 1].x - p[j].x) / dy1;
+
+        /* En crestas de onda (cambio de dirección izq/der), tangente vertical pura (0)
+           para lograr una onda de respiración sin codos ni sobreimpulsos */
+        if (s0 * s1 <= 0) {
+          m[j] = 0;
+        } else {
+          /* Media armónica ponderada (Fritsch-Carlson) en puntos intermedios */
+          var w1 = 2 * dy1 + dy0;
+          var w2 = dy1 + 2 * dy0;
+          m[j] = (w1 + w2) / (w1 / s0 + w2 / s1);
+        }
+      }
+
+      var handleFactor = Math.min(0.49, Math.max(0.32, t));
       var d = "M " + p[0].x.toFixed(1) + " " + p[0].y.toFixed(1);
-      for (var i = 0; i < p.length - 1; i++) {
-        var p0 = p[i === 0 ? 0 : i - 1];
+      for (var i = 0; i < n - 1; i++) {
         var p1 = p[i];
         var p2 = p[i + 1];
-        var p3 = p[i + 2 < p.length ? i + 2 : p.length - 1];
+        var dy = Math.max(0, p2.y - p1.y);
 
-        var cp1x = p1.x + (p2.x - p0.x) * k;
-        var cp1y = p1.y + (p2.y - p0.y) * k;
-        var cp2x = p2.x - (p3.x - p1.x) * k;
-        var cp2y = p2.y - (p3.y - p1.y) * k;
-
-        /* Evitar que los puntos de control en Y se crucen o retrocedan */
-        var minY = Math.min(p1.y, p2.y);
-        var maxY = Math.max(p1.y, p2.y);
-        cp1y = Math.min(maxY, Math.max(minY, cp1y));
-        cp2y = Math.min(maxY, Math.max(minY, cp2y));
-        if (p2.y >= p1.y && cp1y > cp2y) {
-          var midY = (cp1y + cp2y) * 0.5;
-          cp1y = midY;
-          cp2y = midY;
-        }
+        var cp1x = p1.x + m[i] * dy * handleFactor;
+        var cp1y = p1.y + dy * handleFactor;
+        var cp2x = p2.x - m[i + 1] * dy * handleFactor;
+        var cp2y = p2.y - dy * handleFactor;
 
         d +=
           " C " +
@@ -1425,20 +1498,30 @@
         var rEnd = block.range[1];
         var localP = (p - rStart) / Math.max(0.01, rEnd - rStart);
         var count = block.words.length || 1;
+        var feather = Math.max(0.18, 2.2 / count);
 
         block.words.forEach(function (item, idx) {
-          var threshold = idx / count;
-          var lit = reduceMotion || localP >= threshold;
-          item.el.style.opacity = lit ? "1" : String(offOpacity);
+          var threshold = (idx / count) * (1 - feather * 0.5);
+          var rawW = reduceMotion ? 1 : (localP - threshold) / feather;
+          var wP = Math.min(1, Math.max(0, rawW));
+          if (Math.abs(wP - item.lastState) < 0.005 && item.lastState !== -1) return;
+          item.lastState = wP;
+
+          var smoothW = wP * wP * (3 - 2 * wP);
+          var op = offOpacity + (1 - offOpacity) * smoothW;
+          var lit = wP >= 0.45;
+          var blurPx = offBlur * (1 - smoothW);
+
+          item.el.style.opacity = op.toFixed(3);
           item.el.style.color = lit ? (item.accent ? accentColor : onColor) : offColor;
-          item.el.style.filter = lit || offBlur <= 0 ? "none" : "blur(" + offBlur + "px)";
+          item.el.style.filter = blurPx <= 0.04 ? "none" : "blur(" + blurPx.toFixed(2) + "px)";
         });
       });
     }
 
     function tick() {
       var diff = targetP - currentP;
-      if (Math.abs(diff) > 0.0008) {
+      if (Math.abs(diff) > 0.0003) {
         currentP += diff * lerpFactor;
         renderProgress(currentP);
         rafId = window.requestAnimationFrame(tick);
@@ -1463,7 +1546,7 @@
 
     window.addEventListener("scroll", onScrollOrResize, { passive: true });
     window.addEventListener("resize", function () {
-      activePoints = (isMobileQuery.matches && cfg.puntosMobile ? cfg.puntosMobile : cfg.puntos) || activePoints;
+      activePoints = resolvePoints();
       rebuildGeometry();
       onScrollOrResize();
     });
