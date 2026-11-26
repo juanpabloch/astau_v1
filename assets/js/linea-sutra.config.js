@@ -130,12 +130,12 @@ window.ASTAU_LINEA_CONFIG = {
     grosorEstela: 13,            // Halo etéreo y limpio
     opacidadEstela: 0.04,
 
-    /* Surco guía (el hilo aún no recorrido): continuo y apenas visible */
-    mostrarSurcoGuia: true,
-    colorGuia: "#c0b8b1",        // Color línea cálida ASTAU
-    grosorGuia: 0.8,             // Hilo finísimo
-    trazoGuia: "",               // Continuo (sin guiones duros)
-    opacidadGuia: 0.36,          // Susurro visual sobre la superficie
+    /* Surco guía (el hilo aún no recorrido): invisible para que la línea se dibuje pura en el aire */
+    mostrarSurcoGuia: false,
+    colorGuia: "#c0b8b1",
+    grosorGuia: 0.8,
+    trazoGuia: "",
+    opacidadGuia: 0,
 
     /* Orbe luminoso que viaja en la punta de la línea */
     mostrarOrbe: true,
@@ -164,14 +164,14 @@ window.ASTAU_LINEA_CONFIG = {
 
     /* Scroll guiado paso a paso en Desktop (en mobile queda 100% libre):
        - Poné `activo: false` si preferís scroll 100% libre también en desktop.
-       - Bajá `duracionMs` (ej. 550) para un paso más ágil o subilo (ej. 850) para más calma.
-       - Bajá `pausaEntrePasosMs` (ej. 40–80) para encadenar pasos sin espera. */
+       - `duracionMs`: suavidad del deslizamiento (480–560 = muy fluido y sedoso; 700 = más lento).
+       - `pausaEntrePasosMs`: espera mínima en ms para aceptar el siguiente gesto (180 = súper ágil). */
     scrollPorPasos: {
       activo: true,
       activoEnMobile: false,     // false = scroll libre en celulares / pantallas táctiles
-      duracionMs: 680,           // Duración del deslizamiento suave en ms (600–750 = muy fluido)
-      pausaEntrePasosMs: 70,     // Breve respiro al llegar (evita saltos accidentales de rueda)
-      zonaCapturaVh: 0.36,       // Qué tan cerca del primer/último texto empieza a asistir (en % de alto)
+      duracionMs: 620,           // Tiempo de deslizamiento suave con inercia continua (ms)
+      pausaEntrePasosMs: 180,    // Qué tan rápido te deja hacer el siguiente scroll (ms)
+      zonaCapturaVh: 0.34,       // Distancia a la que empieza a asistir al entrar a la sección
       posicionEnPantalla: 0.46,  // Altura donde se centra cada estrofa (0.46 = centro óptico)
       imanSuaveTouch: false
     }

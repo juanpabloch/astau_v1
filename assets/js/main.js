@@ -1116,9 +1116,14 @@
       var hash = (window.location.hash || "").replace(/^#/, "");
       if (!hash) return;
       var modal = document.getElementById("modal-" + hash);
-      if (modal && !modal.open && typeof modal.showModal === "function") {
-        modal.removeAttribute("data-closing");
-        modal.showModal();
+      if (modal && typeof modal.showModal === "function") {
+        modals.forEach(function (other) {
+          if (other !== modal && other.open) other.close();
+        });
+        if (!modal.open) {
+          modal.removeAttribute("data-closing");
+          modal.showModal();
+        }
       }
     }
 
@@ -1574,8 +1579,13 @@
     function renderProgress(p) {
       var arcRatio = mapScrollProgressToArcRatio(p);
       var dashOffset = totalLen * (1 - arcRatio);
+      var lineVisible = arcRatio > 0.001;
       pathMain.style.strokeDashoffset = dashOffset.toFixed(1);
-      if (pathTrail) pathTrail.style.strokeDashoffset = dashOffset.toFixed(1);
+      pathMain.style.opacity = lineVisible ? "1" : "0";
+      if (pathTrail) {
+        pathTrail.style.strokeDashoffset = dashOffset.toFixed(1);
+        pathTrail.style.opacity = lineVisible ? "1" : "0";
+      }
 
       if (orbGroup && estilo.mostrarOrbe !== false && typeof pathMain.getPointAtLength === "function") {
         var pt = pathMain.getPointAtLength(totalLen * Math.min(1, Math.max(0, arcRatio)));
@@ -1705,21 +1715,30 @@
     }
 
     if (stepScrollCfg.activo !== false && !reduceMotion && stepCards.length > 1) {
-      var stepDuration = stepScrollCfg.duracionMs != null ? stepScrollCfg.duracionMs : 680;
-      var stepCooldown = stepScrollCfg.pausaEntrePasosMs != null ? stepScrollCfg.pausaEntrePasosMs : 70;
+      var stepDuration = stepScrollCfg.duracionMs != null ? stepScrollCfg.duracionMs : 520;
+      var minGestureGapMs = stepScrollCfg.pausaEntrePasosMs != null ? stepScrollCfg.pausaEntrePasosMs : 180;
       var stepStopRatio = stepScrollCfg.posicionEnPantalla != null ? stepScrollCfg.posicionEnPantalla : 0.46;
-      var captureVh = stepScrollCfg.zonaCapturaVh != null ? stepScrollCfg.zonaCapturaVh : 0.36;
+      var captureVh = stepScrollCfg.zonaCapturaVh != null ? stepScrollCfg.zonaCapturaVh : 0.34;
 
       var stepAnimRaf = null;
-      var stepAnimProgress = 1;
       var stepAnimDir = 0;
-      var cooldownUntil = 0;
+      var activeDestinationY = null;
+      var scrollFloatY = window.scrollY;
+      var scrollVelocityY = 0;
+      var lastFrameTs = 0;
       var touchActive = false;
       var touchSettleTimer = null;
 
-      /* Detector inteligente de gestos de trackpad (1 gesto = 1 estrofa, sin saltos dobles por inercia) */
+      /* Detector ágil de campana de gesto (Subida → Pico → Bajada):
+         absorbe toda la inercia decreciente de un gesto, pero destraba en el acto
+         apenas detecta un nuevo empuje ascendente de dedos o clic de rueda */
       var lastWheelEventTs = 0;
+      var lastStepTriggerTs = 0;
       var prevWheelAbsDelta = 0;
+      var peakDeltaSinceTrigger = 0;
+      var hasDecayedSinceTrigger = false;
+      var minDeltaAfterDecay = Infinity;
+      var risingDeltaFrames = 0;
       var wheelGestureConsumed = false;
       var wheelGestureDir = 0;
 
@@ -1756,74 +1775,79 @@
         return stepCards.map(getStepTargetY);
       }
 
-      function easeSilkGlide(t) {
-        /* Respuesta inmediata al girar la rueda/trackpad y aterrizaje largo de terciopelo
-           (equivalente a cubic-bezier(0.22, 1, 0.36, 1) sin demora inicial) */
-        var easeOut = 1 - Math.pow(1 - t, 3.4);
-        var softStart = t < 0.12 ? (t / 0.12) * (0.5 + 0.5 * (t / 0.12)) : 1;
-        return easeOut * (t < 0.12 ? 0.85 + 0.15 * softStart : 1);
-      }
-
-      function animateScrollToY(destinationY, duration, dir) {
+      function cancelStepGlide() {
         if (stepAnimRaf) {
           window.cancelAnimationFrame(stepAnimRaf);
           stepAnimRaf = null;
         }
-        var startY = window.scrollY;
-        var distance = destinationY - startY;
-        if (Math.abs(distance) < 6) {
-          isStepAnimating = false;
-          stepAnimProgress = 1;
+        isStepAnimating = false;
+        activeDestinationY = null;
+        scrollVelocityY = 0;
+        lastFrameTs = 0;
+      }
+
+      function animateScrollToY(destinationY, duration, dir) {
+        if (!isStepAnimating) {
+          scrollFloatY = window.scrollY;
+          scrollVelocityY = 0;
+          lastFrameTs = 0;
+        }
+
+        if (Math.abs(destinationY - scrollFloatY) < 4 && Math.abs(scrollVelocityY) < 10) {
+          cancelStepGlide();
           return;
         }
 
+        activeDestinationY = destinationY;
+        stepAnimDir = dir || (destinationY >= scrollFloatY ? 1 : -1);
         isStepAnimating = true;
-        stepAnimProgress = 0;
-        stepAnimDir = dir || (distance > 0 ? 1 : -1);
-        var startTime = null;
-        var baseDur = duration || stepDuration;
-        /* Escala levemente según distancia para que tramos cortos no se sientan lentos */
-        var distScale = Math.min(1.12, Math.max(0.75, Math.abs(distance) / 360));
-        var dur = Math.max(260, Math.round(baseDur * distScale));
 
-        function stepFrame(now) {
-          if (!startTime) startTime = now;
-          var elapsed = now - startTime;
-          var progress = Math.min(1, elapsed / dur);
-          stepAnimProgress = progress;
-          var eased = easeSilkGlide(progress);
-          var nextY = startY + distance * eased;
+        /* Amortiguación crítica continua (smoothDamp): arranque sedoso sin tirón, aterrizaje
+           suave y conservación de velocidad si el usuario encadena otro scroll en el camino */
+        var smoothTime = Math.max(0.11, (duration || stepDuration) / 2850);
 
-          window.scrollTo({ top: nextY, behavior: "instant" });
-          onScrollOrResize();
+        function springFrame(now) {
+          if (!isStepAnimating || activeDestinationY == null) return;
+          var dt = lastFrameTs ? Math.min(0.05, Math.max(0.004, (now - lastFrameTs) / 1000)) : 1 / 60;
+          lastFrameTs = now;
 
-          if (progress < 1) {
-            stepAnimRaf = window.requestAnimationFrame(stepFrame);
-          } else {
-            window.scrollTo({ top: destinationY, behavior: "instant" });
+          var omega = 2 / smoothTime;
+          var x = omega * dt;
+          var exp = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+          var change = scrollFloatY - activeDestinationY;
+          var temp = (scrollVelocityY + omega * change) * dt;
+          scrollVelocityY = (scrollVelocityY - omega * temp) * exp;
+          scrollFloatY = activeDestinationY + (change + temp) * exp;
+
+          if (Math.abs(activeDestinationY - scrollFloatY) < 0.75 && Math.abs(scrollVelocityY) < 12) {
+            window.scrollTo({ top: activeDestinationY, behavior: "instant" });
             onScrollOrResize();
-            stepAnimRaf = null;
-            isStepAnimating = false;
-            stepAnimProgress = 1;
-            cooldownUntil = performance.now() + stepCooldown;
+            cancelStepGlide();
+            return;
           }
+
+          window.scrollTo({ top: scrollFloatY, behavior: "instant" });
+          onScrollOrResize();
+          stepAnimRaf = window.requestAnimationFrame(springFrame);
         }
 
-        stepAnimRaf = window.requestAnimationFrame(stepFrame);
+        if (!stepAnimRaf) {
+          stepAnimRaf = window.requestAnimationFrame(springFrame);
+        }
       }
 
-      function findNextStepIndex(targets, curY, dir) {
-        var tolerance = 24;
+      function findNextStepIndex(targets, refY, dir) {
+        var tolerance = 20;
         if (dir > 0) {
           for (var i = 0; i < targets.length; i++) {
-            if (targets[i] > curY + tolerance) {
+            if (targets[i] > refY + tolerance) {
               return i;
             }
           }
           return -1;
         } else {
           for (var j = targets.length - 1; j >= 0; j--) {
-            if (targets[j] < curY - tolerance) {
+            if (targets[j] < refY - tolerance) {
               return j;
             }
           }
@@ -1845,17 +1869,41 @@
 
           var now = performance.now();
           var gapMs = now - lastWheelEventTs;
+          var sinceTriggerMs = now - lastStepTriggerTs;
 
-          /* Distinguir un nuevo gesto intencional de la cola de inercia del trackpad */
-          if (gapMs > 115 || dir !== wheelGestureDir) {
+          if (absDelta > prevWheelAbsDelta + 0.5) {
+            risingDeltaFrames++;
+          } else if (absDelta < prevWheelAbsDelta - 0.5) {
+            risingDeltaFrames = 0;
+          }
+
+          /* 1) Pausa real entre gestos (>140ms sin eventos) o cambio de sentido = gesto nuevo inmediato */
+          if (gapMs > 140 || dir !== wheelGestureDir) {
             wheelGestureConsumed = false;
-          } else if (
-            wheelGestureConsumed &&
-            (!isStepAnimating || stepAnimProgress > 0.58) &&
-            now >= cooldownUntil &&
-            absDelta > Math.max(15, prevWheelAbsDelta * 1.38)
-          ) {
-            wheelGestureConsumed = false;
+            risingDeltaFrames = 0;
+          } else if (wheelGestureConsumed) {
+            if (!hasDecayedSinceTrigger) {
+              if (absDelta > peakDeltaSinceTrigger) {
+                peakDeltaSinceTrigger = absDelta;
+              } else if (absDelta <= peakDeltaSinceTrigger - 2) {
+                hasDecayedSinceTrigger = true;
+                minDeltaAfterDecay = absDelta;
+              }
+            } else {
+              if (absDelta < minDeltaAfterDecay) {
+                minDeltaAfterDecay = absDelta;
+              }
+              /* 2) Apenas el gesto anterior ya bajó de su pico y los dedos vuelven a empujar
+                    hacia arriba en velocidad (incluso suave), liberar el siguiente paso en el acto */
+              var reaccelerated =
+                sinceTriggerMs >= minGestureGapMs &&
+                ((risingDeltaFrames >= 2 && absDelta >= minDeltaAfterDecay + 3) ||
+                  absDelta >= Math.max(45, minDeltaAfterDecay * 2.2));
+              if (reaccelerated) {
+                wheelGestureConsumed = false;
+                risingDeltaFrames = 0;
+              }
+            }
           }
 
           lastWheelEventTs = now;
@@ -1867,32 +1915,47 @@
 
           var vh = window.innerHeight || document.documentElement.clientHeight || 800;
           var curY = window.scrollY;
+          /* Si ya está deslizando en el mismo sentido, calcular el siguiente paso desde el destino
+             actual para encadenar estrofas sin repetir ni frenar en la misma */
+          var refY =
+            isStepAnimating && activeDestinationY != null && dir === stepAnimDir
+              ? activeDestinationY
+              : curY;
+
           var firstY = targets[0];
           var lastY = targets[targets.length - 1];
 
-          var inDownZone = dir > 0 && curY >= firstY - vh * captureVh && curY < lastY - 20;
-          var inUpZone = dir < 0 && curY > firstY + 20 && curY <= lastY + vh * captureVh;
+          var inDownZone = dir > 0 && curY >= firstY - vh * captureVh && refY < lastY - 18;
+          var inUpZone = dir < 0 && curY > firstY + 18 && refY <= lastY + vh * captureVh;
 
           if (!inDownZone && !inUpZone) {
+            /* Si el usuario hace un gesto nuevo para salir de la última/primera estrofa, soltar suave */
+            if (isStepAnimating && !wheelGestureConsumed) {
+              cancelStepGlide();
+            }
             return;
           }
 
-          /* Permitir cambio de dirección inmediato o encadenar otro paso en el tramo final */
-          var canInterrupt =
-            dir !== stepAnimDir || (stepAnimProgress > 0.58 && !wheelGestureConsumed);
-
-          if ((isStepAnimating && !canInterrupt) || (!isStepAnimating && now < cooldownUntil) || wheelGestureConsumed) {
+          if (wheelGestureConsumed || (sinceTriggerMs < minGestureGapMs && dir === stepAnimDir)) {
             ev.preventDefault();
             return;
           }
 
-          if (absDelta < 4) return;
+          if (absDelta < 3) return;
 
-          var nextIdx = findNextStepIndex(targets, curY, dir);
-          if (nextIdx === -1) return;
+          var nextIdx = findNextStepIndex(targets, refY, dir);
+          if (nextIdx === -1) {
+            if (isStepAnimating) cancelStepGlide();
+            return;
+          }
 
           ev.preventDefault();
           wheelGestureConsumed = true;
+          lastStepTriggerTs = now;
+          peakDeltaSinceTrigger = absDelta;
+          hasDecayedSinceTrigger = false;
+          minDeltaAfterDecay = absDelta;
+          risingDeltaFrames = 0;
           animateScrollToY(targets[nextIdx], stepDuration, dir);
         },
         { passive: false }
@@ -1915,24 +1978,28 @@
         var targets = getAllStepTargets();
         var vh = window.innerHeight || document.documentElement.clientHeight || 800;
         var curY = window.scrollY;
+        var refY =
+          isStepAnimating && activeDestinationY != null && dir === stepAnimDir
+            ? activeDestinationY
+            : curY;
         var firstY = targets[0];
         var lastY = targets[targets.length - 1];
 
-        var inDownZone = dir > 0 && curY >= firstY - vh * captureVh && curY < lastY - 20;
-        var inUpZone = dir < 0 && curY > firstY + 20 && curY <= lastY + vh * captureVh;
+        var inDownZone = dir > 0 && curY >= firstY - vh * captureVh && refY < lastY - 18;
+        var inUpZone = dir < 0 && curY > firstY + 18 && refY <= lastY + vh * captureVh;
         if (!inDownZone && !inUpZone) return;
 
         var now = performance.now();
-        var canInterruptKey = dir !== stepAnimDir || stepAnimProgress > 0.58;
-        if ((isStepAnimating && !canInterruptKey) || (!isStepAnimating && now < cooldownUntil)) {
+        if (now - lastStepTriggerTs < 140 && dir === stepAnimDir) {
           ev.preventDefault();
           return;
         }
 
-        var nextIdx = findNextStepIndex(targets, curY, dir);
+        var nextIdx = findNextStepIndex(targets, refY, dir);
         if (nextIdx === -1) return;
 
         ev.preventDefault();
+        lastStepTriggerTs = now;
         animateScrollToY(targets[nextIdx], stepDuration, dir);
       });
 
@@ -1942,11 +2009,7 @@
           function () {
             touchActive = true;
             if (touchSettleTimer) window.clearTimeout(touchSettleTimer);
-            if (stepAnimRaf) {
-              window.cancelAnimationFrame(stepAnimRaf);
-              stepAnimRaf = null;
-              isStepAnimating = false;
-            }
+            cancelStepGlide();
           },
           { passive: true }
         );
