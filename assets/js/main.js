@@ -1697,13 +1697,22 @@
     var stepScrollCfg = scrollCfg.scrollPorPasos || {};
     var stepCards = $$(".sutra-step", section);
     var siteHeader = $(".header");
+    var isTouchDeviceQuery = window.matchMedia("(hover: none) and (pointer: coarse)");
+
+    function isStepScrollBlockedOnDevice() {
+      if (stepScrollCfg.activoEnMobile === true) return false;
+      return isMobileQuery.matches || isTouchDeviceQuery.matches;
+    }
 
     if (stepScrollCfg.activo !== false && !reduceMotion && stepCards.length > 1) {
-      var stepDuration = stepScrollCfg.duracionMs != null ? stepScrollCfg.duracionMs : 920;
-      var stepCooldown = stepScrollCfg.pausaEntrePasosMs != null ? stepScrollCfg.pausaEntrePasosMs : 220;
+      var stepDuration = stepScrollCfg.duracionMs != null ? stepScrollCfg.duracionMs : 680;
+      var stepCooldown = stepScrollCfg.pausaEntrePasosMs != null ? stepScrollCfg.pausaEntrePasosMs : 70;
       var stepStopRatio = stepScrollCfg.posicionEnPantalla != null ? stepScrollCfg.posicionEnPantalla : 0.46;
+      var captureVh = stepScrollCfg.zonaCapturaVh != null ? stepScrollCfg.zonaCapturaVh : 0.36;
 
       var stepAnimRaf = null;
+      var stepAnimProgress = 1;
+      var stepAnimDir = 0;
       var cooldownUntil = 0;
       var touchActive = false;
       var touchSettleTimer = null;
@@ -1748,13 +1757,14 @@
       }
 
       function easeSilkGlide(t) {
-        /* Combinación armónica coseno + cúbica: aceleración imperceptible y aterrizaje de pluma */
-        var cosine = 0.5 - 0.5 * Math.cos(Math.PI * t);
-        var cubic = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-        return cosine * 0.55 + cubic * 0.45;
+        /* Respuesta inmediata al girar la rueda/trackpad y aterrizaje largo de terciopelo
+           (equivalente a cubic-bezier(0.22, 1, 0.36, 1) sin demora inicial) */
+        var easeOut = 1 - Math.pow(1 - t, 3.4);
+        var softStart = t < 0.12 ? (t / 0.12) * (0.5 + 0.5 * (t / 0.12)) : 1;
+        return easeOut * (t < 0.12 ? 0.85 + 0.15 * softStart : 1);
       }
 
-      function animateScrollToY(destinationY, duration) {
+      function animateScrollToY(destinationY, duration, dir) {
         if (stepAnimRaf) {
           window.cancelAnimationFrame(stepAnimRaf);
           stepAnimRaf = null;
@@ -1763,17 +1773,24 @@
         var distance = destinationY - startY;
         if (Math.abs(distance) < 6) {
           isStepAnimating = false;
+          stepAnimProgress = 1;
           return;
         }
 
         isStepAnimating = true;
+        stepAnimProgress = 0;
+        stepAnimDir = dir || (distance > 0 ? 1 : -1);
         var startTime = null;
-        var dur = Math.max(300, duration || stepDuration);
+        var baseDur = duration || stepDuration;
+        /* Escala levemente según distancia para que tramos cortos no se sientan lentos */
+        var distScale = Math.min(1.12, Math.max(0.75, Math.abs(distance) / 360));
+        var dur = Math.max(260, Math.round(baseDur * distScale));
 
         function stepFrame(now) {
           if (!startTime) startTime = now;
           var elapsed = now - startTime;
           var progress = Math.min(1, elapsed / dur);
+          stepAnimProgress = progress;
           var eased = easeSilkGlide(progress);
           var nextY = startY + distance * eased;
 
@@ -1787,6 +1804,7 @@
             onScrollOrResize();
             stepAnimRaf = null;
             isStepAnimating = false;
+            stepAnimProgress = 1;
             cooldownUntil = performance.now() + stepCooldown;
           }
         }
@@ -1795,7 +1813,7 @@
       }
 
       function findNextStepIndex(targets, curY, dir) {
-        var tolerance = 26;
+        var tolerance = 24;
         if (dir > 0) {
           for (var i = 0; i < targets.length; i++) {
             if (targets[i] > curY + tolerance) {
@@ -1816,7 +1834,7 @@
       window.addEventListener(
         "wheel",
         function (ev) {
-          if (editorActive || reduceMotion) return;
+          if (editorActive || reduceMotion || isStepScrollBlockedOnDevice()) return;
           if (ev.ctrlKey || ev.metaKey || ev.defaultPrevented) return;
           if (Math.abs(ev.deltaX) > Math.abs(ev.deltaY)) return;
           if (document.body.classList.contains("menu-open") || $("dialog[open]")) return;
@@ -1829,13 +1847,13 @@
           var gapMs = now - lastWheelEventTs;
 
           /* Distinguir un nuevo gesto intencional de la cola de inercia del trackpad */
-          if (gapMs > 140 || dir !== wheelGestureDir) {
+          if (gapMs > 115 || dir !== wheelGestureDir) {
             wheelGestureConsumed = false;
           } else if (
             wheelGestureConsumed &&
-            !isStepAnimating &&
+            (!isStepAnimating || stepAnimProgress > 0.58) &&
             now >= cooldownUntil &&
-            absDelta > Math.max(18, prevWheelAbsDelta * 1.45)
+            absDelta > Math.max(15, prevWheelAbsDelta * 1.38)
           ) {
             wheelGestureConsumed = false;
           }
@@ -1852,14 +1870,18 @@
           var firstY = targets[0];
           var lastY = targets[targets.length - 1];
 
-          var inDownZone = dir > 0 && curY >= firstY - vh * 0.54 && curY < lastY - 22;
-          var inUpZone = dir < 0 && curY > firstY + 22 && curY <= lastY + vh * 0.54;
+          var inDownZone = dir > 0 && curY >= firstY - vh * captureVh && curY < lastY - 20;
+          var inUpZone = dir < 0 && curY > firstY + 20 && curY <= lastY + vh * captureVh;
 
           if (!inDownZone && !inUpZone) {
             return;
           }
 
-          if (isStepAnimating || now < cooldownUntil || wheelGestureConsumed) {
+          /* Permitir cambio de dirección inmediato o encadenar otro paso en el tramo final */
+          var canInterrupt =
+            dir !== stepAnimDir || (stepAnimProgress > 0.58 && !wheelGestureConsumed);
+
+          if ((isStepAnimating && !canInterrupt) || (!isStepAnimating && now < cooldownUntil) || wheelGestureConsumed) {
             ev.preventDefault();
             return;
           }
@@ -1871,13 +1893,13 @@
 
           ev.preventDefault();
           wheelGestureConsumed = true;
-          animateScrollToY(targets[nextIdx], stepDuration);
+          animateScrollToY(targets[nextIdx], stepDuration, dir);
         },
         { passive: false }
       );
 
       window.addEventListener("keydown", function (ev) {
-        if (editorActive || reduceMotion) return;
+        if (editorActive || reduceMotion || isStepScrollBlockedOnDevice()) return;
         if (document.body.classList.contains("menu-open") || $("dialog[open]")) return;
         var tag = ev.target && ev.target.tagName ? ev.target.tagName.toLowerCase() : "";
         if (tag === "input" || tag === "textarea" || tag === "select" || tag === "button" || tag === "a") return;
@@ -1896,12 +1918,13 @@
         var firstY = targets[0];
         var lastY = targets[targets.length - 1];
 
-        var inDownZone = dir > 0 && curY >= firstY - vh * 0.52 && curY < lastY - 22;
-        var inUpZone = dir < 0 && curY > firstY + 22 && curY <= lastY + vh * 0.52;
+        var inDownZone = dir > 0 && curY >= firstY - vh * captureVh && curY < lastY - 20;
+        var inUpZone = dir < 0 && curY > firstY + 20 && curY <= lastY + vh * captureVh;
         if (!inDownZone && !inUpZone) return;
 
         var now = performance.now();
-        if (isStepAnimating || now < cooldownUntil) {
+        var canInterruptKey = dir !== stepAnimDir || stepAnimProgress > 0.58;
+        if ((isStepAnimating && !canInterruptKey) || (!isStepAnimating && now < cooldownUntil)) {
           ev.preventDefault();
           return;
         }
@@ -1910,10 +1933,10 @@
         if (nextIdx === -1) return;
 
         ev.preventDefault();
-        animateScrollToY(targets[nextIdx], stepDuration);
+        animateScrollToY(targets[nextIdx], stepDuration, dir);
       });
 
-      if (stepScrollCfg.imanSuaveTouch !== false) {
+      if (stepScrollCfg.imanSuaveTouch === true) {
         window.addEventListener(
           "touchstart",
           function () {
@@ -1931,6 +1954,7 @@
         window.addEventListener(
           "touchend",
           function () {
+            if (isStepScrollBlockedOnDevice()) return;
             touchActive = false;
             if (touchSettleTimer) window.clearTimeout(touchSettleTimer);
             touchSettleTimer = window.setTimeout(function () {

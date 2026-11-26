@@ -149,25 +149,31 @@ window.ASTAU_LINEA_CONFIG = {
      3. DINÁMICA DE SCROLL Y FLUIDEZ DE MOVIMIENTO
      ------------------------------------------------------------------------ */
   scroll: {
+    /* Multiplicador general de avance de la línea (1.0 = natural, 1.15 = un poco más ágil) */
     velocidad: 1.1,
-    /* Horizonte progresivo: arranca sereno (0.60) al iniciar la sección y avanza
-       suavemente (hasta 0.86) hacia el final para que, al detenerse en la última
-       estrofa, la línea complete su recorrido hasta el botón o portal de cierre. */
+
+    /* Horizonte de lectura en pantalla (0 = borde superior, 1 = borde inferior):
+       Arranca en 0.60 al entrar a la sección y avanza hasta 0.86 al final. */
     alturaEnPantalla: 0.60,
     alturaEnPantallaFinal: 0.86,
 
-    /* Inercia sedosa en scroll libre y respuesta directa en scroll guiado */
-    suavizado: 0.18,
-    suavizadoEnPaso: 0.36,
+    /* Fluidez/inercia de la línea y las palabras (0.10 = más flotante/lento, 0.30 = más directo) */
+    suavizado: 0.22,
+    suavizadoEnPaso: 0.48,
     compensarCurvasHorizontales: true,
 
-    /* Scroll guiado paso a paso entre cada estrofa */
+    /* Scroll guiado paso a paso en Desktop (en mobile queda 100% libre):
+       - Poné `activo: false` si preferís scroll 100% libre también en desktop.
+       - Bajá `duracionMs` (ej. 550) para un paso más ágil o subilo (ej. 850) para más calma.
+       - Bajá `pausaEntrePasosMs` (ej. 40–80) para encadenar pasos sin espera. */
     scrollPorPasos: {
       activo: true,
-      duracionMs: 800,          // Deslizamiento de seda entre una estrofa y la siguiente
-      pausaEntrePasosMs: 200,   // Pausa serena al posarse en cada estrofa
-      posicionEnPantalla: 0.46, // Centro óptico descontando el header fijo superior
-      imanSuaveTouch: true      // En pantallas táctiles acomoda suavemente al soltar
+      activoEnMobile: false,     // false = scroll libre en celulares / pantallas táctiles
+      duracionMs: 680,           // Duración del deslizamiento suave en ms (600–750 = muy fluido)
+      pausaEntrePasosMs: 70,     // Breve respiro al llegar (evita saltos accidentales de rueda)
+      zonaCapturaVh: 0.36,       // Qué tan cerca del primer/último texto empieza a asistir (en % de alto)
+      posicionEnPantalla: 0.46,  // Altura donde se centra cada estrofa (0.46 = centro óptico)
+      imanSuaveTouch: false
     }
   },
 
