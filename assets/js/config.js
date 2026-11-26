@@ -24,16 +24,12 @@ window.ASTAU_CONFIG = {
    * Se carga solo en navegadores sin "reducir movimiento" ni ahorro de datos;
    * en esos casos, y sin JavaScript, se ve la imagen assets/img/hero-astau.jpg.
    *
-   * Hoy apunta a un video PROVISORIO. Para el definitivo: reemplazar los
-   * archivos con los mismos nombres (o cambiar las rutas) y borrar la etiqueta
-   * "Video provisorio" en index.html.
-   *
    * sound: true muestra el botón "Escuchar respiración". Activarlo solo si el
    * video definitivo tiene ese audio.
    */
   heroVideo: {
-    webm: "assets/video/hero-astau-v1.webm",
-    mp4: "assets/video/hero-astau-v1.mp4",
+    webm: "assets/video/hero-astau_v3.webm",
+    mp4: "assets/video/hero-astau_v3.mp4",
     sound: false
   }
 };
