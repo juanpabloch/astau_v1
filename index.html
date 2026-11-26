@@ -254,8 +254,8 @@
       <div class="sutra-canvas" aria-hidden="true" data-sutra-canvas>
         <svg class="sutra-svg" data-sutra-svg fill="none">
           <defs>
-            <filter id="sutra-orb-glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="5" result="blur" />
+            <filter id="sutra-orb-glow" x="-120%" y="-120%" width="340%" height="340%">
+              <feGaussianBlur stdDeviation="4.5" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
           </defs>
@@ -293,20 +293,14 @@
           <p class="sutra-step__copy sutra-step__copy--quote" data-sutra-text="3">
             El mundo está lleno de estímulos.<br><em class="sutra-accent">En ASTAU creamos un espacio para que vuelvas a conectar con vos.</em>
           </p>
-          <div class="sutra-step__cta">
-            <a class="link" href="astau/">Conocé más</a>
-          </div>
         </article>
       </div>
 
-      <!-- Portal de cierre (Florece cuando llega el orbe) -->
-      <div class="sutra-portal sutra-portal--end" aria-hidden="true" data-sutra-portal-end>
-        <div class="sutra-portal__bloom">
-          <span class="sutra-portal__ripple"></span>
-          <span class="sutra-portal__ripple sutra-portal__ripple--delay"></span>
-          <span class="sutra-portal__node"></span>
+      <!-- Portal de cierre (la línea desemboca directamente en el botón) -->
+      <div class="sutra-portal sutra-portal--end" data-sutra-portal-end>
+        <div class="sutra-portal__cta">
+          <a class="link" href="astau/">Conocé más</a>
         </div>
-        <span class="sutra-portal__stem sutra-portal__stem--out"></span>
       </div>
 
       <!-- Estructura anterior comentada como referencia:

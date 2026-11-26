@@ -232,7 +232,7 @@
 <body data-root=".." data-page="clases">
   <a class="skip" href="#contenido">Saltar al contenido</a>
 
-  <header class="header">
+  <header class="header header--over">
     <div class="wrap header__inner">
       <a class="header__logo" href="../" aria-label="ASTAU, ir al inicio">
         <img class="header__logo-color" src="../assets/brand/logo-color.svg" alt="ASTAU" width="93" height="124">
@@ -275,9 +275,10 @@
   <main id="contenido" data-clases-src="../assets/data/clases.json">
     <section class="page-head">
       <div class="page-head__media" aria-hidden="true">
-        <!-- Imagen de fondo opcional (descomentar y ajustar ruta):
-        <img src="../assets/img/espacio-astau.jpg" alt="" width="1600" height="900" fetchpriority="high" decoding="async">
-        -->
+        <video poster="../assets/img/espacio-astau.jpg" autoplay muted loop playsinline preload="metadata">
+          <source src="../assets/video/hero-clase-astau-v1.webm" type="video/webm">
+          <source src="../assets/video/hero-clase-astau-v1.mp4" type="video/mp4">
+        </video>
       </div>
       <div class="page-head__overlay" aria-hidden="true"></div>
       <div class="wrap grid page-head__grid">

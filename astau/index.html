@@ -128,7 +128,7 @@
 <body data-root=".." data-page="astau">
   <a class="skip" href="#contenido">Saltar al contenido</a>
 
-  <header class="header">
+  <header class="header header--over">
     <div class="wrap header__inner">
       <a class="header__logo" href="../" aria-label="ASTAU, ir al inicio">
         <img class="header__logo-color" src="../assets/brand/logo-color.svg" alt="ASTAU" width="93" height="124">
@@ -171,9 +171,10 @@
   <main id="contenido">
     <section class="page-head">
       <div class="page-head__media" aria-hidden="true">
-        <!-- Imagen de fondo opcional (descomentar y ajustar ruta):
-        <img src="../assets/img/equipo-astau.jpg" alt="" width="1600" height="900" fetchpriority="high" decoding="async">
-        -->
+        <video poster="../assets/img/equipo-astau.jpg" autoplay muted loop playsinline preload="metadata">
+          <source src="../assets/video/hero-equipo-astau-v1.webm" type="video/webm">
+          <source src="../assets/video/hero-equipo-astau-v1.mp4" type="video/mp4">
+        </video>
       </div>
       <div class="page-head__overlay" aria-hidden="true"></div>
       <div class="wrap grid page-head__grid">
@@ -201,8 +202,8 @@
       <div class="sutra-canvas" aria-hidden="true" data-sutra-canvas>
         <svg class="sutra-svg" data-sutra-svg fill="none">
           <defs>
-            <filter id="sutra-orb-glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="5" result="blur" />
+            <filter id="sutra-orb-glow" x="-120%" y="-120%" width="340%" height="340%">
+              <feGaussianBlur stdDeviation="4.5" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
           </defs>
@@ -220,7 +221,7 @@
       <div class="wrap grid sutra-journey">
         <article class="sutra-step sutra-step--1">
           <!-- <p class="label sutra-step__label">01 · El propósito</p> -->
-          <p class="sutra-step__copy" data-sutra-text="0">
+          <p class="sutra-step__copy sutra-step__copy--quote" data-sutra-text="0">
             ASTAU nace con el propósito de acompañar, a través de la práctica consciente del yoga y la meditación, <em class="sutra-accent">procesos de exploración, dedicación y transformación personal.</em>
           </p>
         </article>
@@ -234,7 +235,7 @@
 
         <article class="sutra-step sutra-step--3">
           <!-- <p class="label sutra-step__label">03 · El acompañamiento</p> -->
-          <p class="sutra-step__copy" data-sutra-text="2">
+          <p class="sutra-step__copy sutra-step__copy--quote" data-sutra-text="2">
             Nuestro equipo guía y acompaña de manera personalizada cada recorrido con <em class="sutra-accent">atención, cuidado y respeto.</em>
           </p>
         </article>
@@ -272,7 +273,6 @@
     <section class="section" aria-label="Guías">
       <div class="wrap">
         <div class="section-head guides-head">
-          <p class="label reveal">Nuestro equipo</p>
           <h2 class="h2 reveal">Guías</h2>
         </div>
 

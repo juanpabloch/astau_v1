@@ -828,11 +828,31 @@
   /* 7. Video del hero ---------------------------------------------------- */
 
   function initHeroVideo() {
+    var saveData = navigator.connection && navigator.connection.saveData;
+    var pageHeadVideo = $(".page-head__media video");
+    if (pageHeadVideo) {
+      if (reduceMotion || saveData) {
+        pageHeadVideo.removeAttribute("autoplay");
+        pageHeadVideo.pause();
+      } else {
+        var pageHead = pageHeadVideo.closest(".page-head");
+        if (pageHead) {
+          pageHead.addEventListener("click", function (event) {
+            if (event.target.closest("a, button")) return;
+            if (pageHeadVideo.paused) {
+              pageHeadVideo.play();
+            } else {
+              pageHeadVideo.pause();
+            }
+          });
+        }
+      }
+    }
+
     var media = $("[data-hero-video]");
     var controls = $("[data-hero-controls]");
     var settings = config.heroVideo || {};
     if (!media || !(settings.mp4 || settings.webm)) return;
-    var saveData = navigator.connection && navigator.connection.saveData;
     if (reduceMotion || saveData) return;
 
     var poster = $("img", media);
@@ -1224,13 +1244,18 @@
     textEls.forEach(function (el, blockIdx) {
       var stepCard = el.closest(".sutra-step");
       if (stepCard) {
-        if (textosCfg.opacidadFondoTexto != null) {
+        if (textosCfg.opacidadFondoTexto != null && textosCfg.opacidadFondoTexto > 0) {
           stepCard.style.backgroundColor = "rgb(238 234 228 / " + textosCfg.opacidadFondoTexto + ")";
+        } else {
+          stepCard.style.backgroundColor = "transparent";
         }
-        if (textosCfg.blurFondoTexto != null) {
+        if (textosCfg.blurFondoTexto != null && textosCfg.blurFondoTexto > 0) {
           var blurVal = "blur(" + textosCfg.blurFondoTexto + "px)";
           stepCard.style.backdropFilter = blurVal;
           stepCard.style.webkitBackdropFilter = blurVal;
+        } else {
+          stepCard.style.backdropFilter = "none";
+          stepCard.style.webkitBackdropFilter = "none";
         }
       }
       var words = [];
@@ -1277,30 +1302,66 @@
       }
 
       wordBlocks.push({
+        el: el,
+        stepCard: stepCard,
         words: words,
-        range: blockRange
+        range: blockRange,
+        autoRange: null
       });
     });
 
+    function parseHexRgb(hex, fallback) {
+      var clean = String(hex || "").replace("#", "").trim();
+      if (clean.length === 3) {
+        clean = clean[0] + clean[0] + clean[1] + clean[1] + clean[2] + clean[2];
+      }
+      if (clean.length !== 6) return fallback;
+      var num = parseInt(clean, 16);
+      if (isNaN(num)) return fallback;
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+    }
+
+    function mixRgbString(rgbA, rgbB, t) {
+      var r = Math.round(rgbA[0] + (rgbB[0] - rgbA[0]) * t);
+      var g = Math.round(rgbA[1] + (rgbB[1] - rgbA[1]) * t);
+      var b = Math.round(rgbA[2] + (rgbB[2] - rgbA[2]) * t);
+      return "rgb(" + r + " " + g + " " + b + ")";
+    }
+
     /* 3. Generador de curva orgánica (Spline Hermite Monótono en Y / Onda Sinusoidal) */
     var isMobileQuery = window.matchMedia("(max-width: 47.99rem)");
+    var isTabletQuery = window.matchMedia("(min-width: 48rem) and (max-width: 63.99rem)");
+    var startMedallion = portalStart ? $(".sutra-portal__medallion", portalStart) : null;
+    var endVisualTarget = portalEnd
+      ? $(".sutra-portal__cta .link, .sutra-portal__bloom", portalEnd) || portalEnd
+      : null;
 
     function resolvePoints() {
+      var rawPts;
       if (isMobileQuery.matches) {
-        if (isManifiesto && cfg.puntosManifiestoMobile) return cfg.puntosManifiestoMobile;
-        if (!isManifiesto && cfg.puntosConceptosMobile) return cfg.puntosConceptosMobile;
-        if (cfg.puntosMobile) return cfg.puntosMobile;
+        rawPts =
+          (isManifiesto && cfg.puntosManifiestoMobile) ||
+          (!isManifiesto && cfg.puntosConceptosMobile) ||
+          cfg.puntosMobile;
+      } else if (isTabletQuery.matches) {
+        rawPts =
+          (isManifiesto && cfg.puntosManifiestoTablet) ||
+          (!isManifiesto && cfg.puntosConceptosTablet) ||
+          cfg.puntosTablet;
       }
-      if (isManifiesto && cfg.puntosManifiesto) return cfg.puntosManifiesto;
-      if (!isManifiesto && cfg.puntosConceptos) return cfg.puntosConceptos;
-      return (
-        cfg.puntos || [
-          { x: 50, y: 0 },
-          { x: 65, y: 24 },
-          { x: 35, y: 58 },
-          { x: 50, y: 100 }
-        ]
-      );
+      if (!rawPts) {
+        rawPts =
+          (isManifiesto && cfg.puntosManifiesto) ||
+          (!isManifiesto && cfg.puntosConceptos) ||
+          cfg.puntos || [
+            { x: 50, y: 0 },
+            { x: 68, y: 21 },
+            { x: 32, y: 52 },
+            { x: 76, y: 81 },
+            { x: 50, y: 100 }
+          ];
+      }
+      return rawPts;
     }
 
     var activePoints = resolvePoints();
@@ -1377,9 +1438,28 @@
     var canvasHeight = 1000;
     var yToLengthTable = [];
 
+    function syncCanvasEndpointsToPortals() {
+      if (canvasWrap === section) return;
+      var sRect = section.getBoundingClientRect();
+      if (sRect.height < 120) return;
+
+      if (startMedallion && portalStart && portalStart.style.display !== "none") {
+        var mRect = startMedallion.getBoundingClientRect();
+        var topOffset = Math.max(0, mRect.bottom - sRect.top - 0.5);
+        canvasWrap.style.top = topOffset.toFixed(1) + "px";
+      }
+      if (endVisualTarget && portalEnd && portalEnd.style.display !== "none") {
+        var eRect = endVisualTarget.getBoundingClientRect();
+        var bottomOffset = Math.max(0, sRect.bottom - eRect.top - 0.5);
+        canvasWrap.style.bottom = bottomOffset.toFixed(1) + "px";
+      }
+    }
+
     function rebuildGeometry() {
-      var w = Math.max(320, canvasWrap.clientWidth);
-      var h = Math.max(400, canvasWrap.clientHeight);
+      syncCanvasEndpointsToPortals();
+
+      var w = Math.max(280, canvasWrap.clientWidth);
+      var h = Math.max(320, canvasWrap.clientHeight);
       canvasHeight = h;
       svg.setAttribute("viewBox", "0 0 " + w + " " + h);
 
@@ -1397,9 +1477,9 @@
         pathMain.style.strokeDasharray = String(totalLen);
         if (pathTrail) pathTrail.style.strokeDasharray = String(totalLen);
 
-        /* Tabla de muestreo monotónica para que la bolita avance en Y sin saltos */
+        /* Tabla de muestreo monotónica para que el orbe avance en Y como seda */
         yToLengthTable = [];
-        var samples = 160;
+        var samples = 200;
         var maxSeenY = 0;
         for (var s = 0; s <= samples; s++) {
           var lenRatio = s / samples;
@@ -1412,6 +1492,25 @@
           maxSeenY = rawY;
           yToLengthTable.push({ yRatio: rawY, lenRatio: lenRatio });
         }
+      }
+
+      /* Medir la posición vertical real de cada bloque de texto dentro del lienzo
+         para que se ilumine apenas entra en la zona de lectura */
+      if (textosCfg.usarPosicionReal !== false) {
+        var cRect = canvasWrap.getBoundingClientRect();
+        var vh = window.innerHeight || document.documentElement.clientHeight || 800;
+        var leadStartRatio = (vh * (textosCfg.adelantoInicioVh != null ? textosCfg.adelantoInicioVh : 0.24)) / Math.max(1, h);
+        var leadEndRatio = (vh * (textosCfg.adelantoFinVh != null ? textosCfg.adelantoFinVh : 0.05)) / Math.max(1, h);
+
+        wordBlocks.forEach(function (block) {
+          if (!block.el) return;
+          var bRect = block.el.getBoundingClientRect();
+          var topRatio = (bRect.top - cRect.top) / Math.max(1, h);
+          var bottomRatio = (bRect.bottom - cRect.top) / Math.max(1, h);
+          var startP = Math.max(0, topRatio - leadStartRatio);
+          var endP = Math.max(startP + 0.075, bottomRatio - leadEndRatio);
+          block.autoRange = [startP, Math.min(0.95, endP)];
+        });
       }
     }
 
@@ -1434,27 +1533,40 @@
       return 1;
     }
 
-    /* 4. Cálculo y renderizado del progreso de scroll con inercia */
+    /* 4. Cálculo y renderizado del progreso de scroll con inercia de seda */
     var targetP = 0;
     var currentP = 0;
     var rafId = null;
-    var lerpFactor = reduceMotion ? 1 : scrollCfg.suavizado != null ? scrollCfg.suavizado : 0.22;
+    var isStepAnimating = false;
+    var baseLerpFactor = reduceMotion ? 1 : scrollCfg.suavizado != null ? scrollCfg.suavizado : 0.18;
+    var stepLerpFactor = reduceMotion ? 1 : scrollCfg.suavizadoEnPaso != null ? scrollCfg.suavizadoEnPaso : 0.36;
     var speedMult = scrollCfg.velocidad != null ? scrollCfg.velocidad : 1.0;
-    var screenAnchor = scrollCfg.alturaEnPantalla != null ? scrollCfg.alturaEnPantalla : 0.56;
+    var screenAnchorStart = scrollCfg.alturaEnPantalla != null ? scrollCfg.alturaEnPantalla : 0.60;
+    var screenAnchorEnd = scrollCfg.alturaEnPantallaFinal != null ? scrollCfg.alturaEnPantallaFinal : screenAnchorStart;
 
-    var offOpacity = textosCfg.opacidadApagada != null ? textosCfg.opacidadApagada : 0.24;
-    var offBlur = textosCfg.blurApagada != null ? textosCfg.blurApagada : 0.6;
-    var offColor = textosCfg.colorApagada || "#7d776f";
+    var offOpacity = textosCfg.opacidadApagada != null ? textosCfg.opacidadApagada : 0.32;
+    var offBlur = textosCfg.blurApagada != null ? textosCfg.blurApagada : 0;
+    var offColor = textosCfg.colorApagada || "#8a837b";
     var onColor = textosCfg.colorEncendida || "#383838";
+    var worldColor = textosCfg.colorMundoManifiesto || "#5e5852";
     var accentColor = textosCfg.colorAcento || "#5b2e44";
+
+    var offRgb = parseHexRgb(offColor, [138, 131, 123]);
+    var onRgb = parseHexRgb(onColor, [56, 56, 56]);
+    var worldRgb = parseHexRgb(worldColor, [94, 88, 82]);
+    var accentRgb = parseHexRgb(accentColor, [91, 46, 68]);
 
     function computeTargetProgress() {
       if (reduceMotion) return 1;
       var rect = canvasWrap.getBoundingClientRect();
-      var vh = window.innerHeight || document.documentElement.clientHeight;
-      var anchorY = vh * screenAnchor;
+      var vh = window.innerHeight || document.documentElement.clientHeight || 800;
       var totalTravel = Math.max(1, rect.height);
-      var rawP = (anchorY - rect.top) / totalTravel;
+
+      /* Horizonte progresivo: comienza en screenAnchorStart y avanza suavemente a screenAnchorEnd
+         para que al posarse en la última estrofa el filamento complete su llegada al cierre */
+      var approxP = Math.min(1, Math.max(0, (vh * screenAnchorStart - rect.top) / totalTravel));
+      var dynamicAnchor = screenAnchorStart + (screenAnchorEnd - screenAnchorStart) * approxP;
+      var rawP = (vh * dynamicAnchor - rect.top) / totalTravel;
       var scaledP = (rawP - 0.5) * speedMult + 0.5;
       return Math.min(1, Math.max(0, scaledP));
     }
@@ -1466,8 +1578,13 @@
       if (pathTrail) pathTrail.style.strokeDashoffset = dashOffset.toFixed(1);
 
       if (orbGroup && estilo.mostrarOrbe !== false && typeof pathMain.getPointAtLength === "function") {
-        var pt = pathMain.getPointAtLength(totalLen * Math.min(1, Math.max(0.002, arcRatio)));
+        var pt = pathMain.getPointAtLength(totalLen * Math.min(1, Math.max(0, arcRatio)));
+        /* Aparición suave al nacer del medallón y fusión delicada al posarse en el cierre */
+        var fadeIn = Math.min(1, p / 0.035);
+        var fadeOut = p > 0.965 ? Math.max(0, (1 - p) / 0.035) : 1;
+        var orbAlpha = Math.min(fadeIn, fadeOut);
         orbGroup.setAttribute("transform", "translate(" + pt.x.toFixed(1) + ", " + pt.y.toFixed(1) + ")");
+        orbGroup.style.opacity = orbAlpha.toFixed(3);
       }
 
       /* Animar portales y arcos orgánicos de entrada y salida */
@@ -1481,7 +1598,7 @@
         waveBottomPath.setAttribute("d", "M0,120 L1440,120 L1440,102 Q720," + bottomCurve + " 0,102 Z");
       }
 
-      var rotDeg = transCfg.rotacionIsotipoGrados != null ? transCfg.rotacionIsotipoGrados : 45;
+      var rotDeg = transCfg.rotacionIsotipoGrados != null ? transCfg.rotacionIsotipoGrados : 30;
       if (portalMark) {
         portalMark.style.transform = "rotate(" + (p * rotDeg).toFixed(1) + "deg)";
       }
@@ -1489,40 +1606,51 @@
         portalRing.style.transform = "rotate(" + (-p * rotDeg * 1.4).toFixed(1) + "deg) scale(" + (1 + Math.sin(p * Math.PI) * 0.08).toFixed(3) + ")";
       }
       if (portalEnd) {
-        var bloomThreshold = transCfg.umbralFloracionFinal != null ? transCfg.umbralFloracionFinal : 0.9;
+        var bloomThreshold = transCfg.umbralFloracionFinal != null ? transCfg.umbralFloracionFinal : 0.92;
         portalEnd.classList.toggle("is-blooming", p >= bloomThreshold);
       }
 
       wordBlocks.forEach(function (block) {
-        var rStart = block.range[0];
-        var rEnd = block.range[1];
+        var activeRange = block.autoRange || block.range;
+        var rStart = activeRange[0];
+        var rEnd = activeRange[1];
         var localP = (p - rStart) / Math.max(0.01, rEnd - rStart);
         var count = block.words.length || 1;
-        var feather = Math.max(0.18, 2.2 / count);
+        var feather = Math.max(0.24, 2.6 / count);
+
+        if (block.stepCard) {
+          block.stepCard.classList.toggle("is-active", localP >= 0.08);
+        }
 
         block.words.forEach(function (item, idx) {
-          var threshold = (idx / count) * (1 - feather * 0.5);
+          var threshold = (idx / Math.max(1, count - 1)) * (1 - feather);
           var rawW = reduceMotion ? 1 : (localP - threshold) / feather;
           var wP = Math.min(1, Math.max(0, rawW));
-          if (Math.abs(wP - item.lastState) < 0.005 && item.lastState !== -1) return;
+          if (Math.abs(wP - item.lastState) < 0.003 && item.lastState !== -1) return;
           item.lastState = wP;
 
-          var smoothW = wP * wP * (3 - 2 * wP);
-          var op = offOpacity + (1 - offOpacity) * smoothW;
-          var lit = wP >= 0.45;
-          var blurPx = offBlur * (1 - smoothW);
+          /* Curva easeOut para que las palabras cobren contraste y cuerpo con fluidez */
+          var easeW = 1 - (1 - wP) * (1 - wP);
+          var op = offOpacity + (1 - offOpacity) * easeW;
+          var targetRgb = item.accent ? accentRgb : isManifiesto ? worldRgb : onRgb;
 
           item.el.style.opacity = op.toFixed(3);
-          item.el.style.color = lit ? (item.accent ? accentColor : onColor) : offColor;
-          item.el.style.filter = blurPx <= 0.04 ? "none" : "blur(" + blurPx.toFixed(2) + "px)";
+          item.el.style.color = mixRgbString(offRgb, targetRgb, easeW);
+          if (offBlur > 0) {
+            var blurPx = offBlur * (1 - easeW);
+            item.el.style.filter = blurPx <= 0.04 ? "none" : "blur(" + blurPx.toFixed(2) + "px)";
+          } else if (item.el.style.filter) {
+            item.el.style.filter = "";
+          }
         });
       });
     }
 
     function tick() {
       var diff = targetP - currentP;
-      if (Math.abs(diff) > 0.0003) {
-        currentP += diff * lerpFactor;
+      var activeLerp = isStepAnimating ? stepLerpFactor : baseLerpFactor;
+      if (Math.abs(diff) > 0.00025) {
+        currentP += diff * activeLerp;
         renderProgress(currentP);
         rafId = window.requestAnimationFrame(tick);
       } else {
@@ -1539,20 +1667,301 @@
       }
     }
 
+    function refreshAll() {
+      activePoints = resolvePoints();
+      rebuildGeometry();
+      onScrollOrResize();
+    }
+
     rebuildGeometry();
     targetP = computeTargetProgress();
     currentP = targetP;
     renderProgress(currentP);
 
     window.addEventListener("scroll", onScrollOrResize, { passive: true });
-    window.addEventListener("resize", function () {
-      activePoints = resolvePoints();
-      rebuildGeometry();
-      onScrollOrResize();
-    });
+    window.addEventListener("resize", refreshAll, { passive: true });
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(refreshAll);
+    }
+    if ("ResizeObserver" in window) {
+      var ro = new ResizeObserver(function () {
+        refreshAll();
+      });
+      ro.observe(section);
+    }
+
+    var editorActive = cfg.modoEditor === true || window.location.search.indexOf("editar-linea") !== -1;
+
+    /* 4b. Scroll guiado de seda paso a paso entre cada estrofa (scrollPorPasos) */
+    var stepScrollCfg = scrollCfg.scrollPorPasos || {};
+    var stepCards = $$(".sutra-step", section);
+    var siteHeader = $(".header");
+
+    if (stepScrollCfg.activo !== false && !reduceMotion && stepCards.length > 1) {
+      var stepDuration = stepScrollCfg.duracionMs != null ? stepScrollCfg.duracionMs : 920;
+      var stepCooldown = stepScrollCfg.pausaEntrePasosMs != null ? stepScrollCfg.pausaEntrePasosMs : 220;
+      var stepStopRatio = stepScrollCfg.posicionEnPantalla != null ? stepScrollCfg.posicionEnPantalla : 0.46;
+
+      var stepAnimRaf = null;
+      var cooldownUntil = 0;
+      var touchActive = false;
+      var touchSettleTimer = null;
+
+      /* Detector inteligente de gestos de trackpad (1 gesto = 1 estrofa, sin saltos dobles por inercia) */
+      var lastWheelEventTs = 0;
+      var prevWheelAbsDelta = 0;
+      var wheelGestureConsumed = false;
+      var wheelGestureDir = 0;
+
+      function getHeaderClearance(vh) {
+        if (!siteHeader) return 0;
+        var h = siteHeader.offsetHeight || 83;
+        return Math.min(vh * 0.16, Math.min(92, h));
+      }
+
+      function getStepTargetY(stepEl, idx) {
+        var r = stepEl.getBoundingClientRect();
+        var vh = window.innerHeight || document.documentElement.clientHeight || 800;
+        var clearance = getHeaderClearance(vh);
+        var opticalAnchor = clearance + (vh - clearance) * stepStopRatio;
+        var centerInPage = window.scrollY + r.top + r.height * 0.5;
+        var target = centerInPage - opticalAnchor;
+
+        /* En la última estrofa, encuadrar también el botón / portal de cierre para que el final
+           de la línea se vea posarse con delicadeza sin cortar el botón abajo */
+        if (idx === stepCards.length - 1 && endVisualTarget) {
+          var eRect = endVisualTarget.getBoundingClientRect();
+          var endBottomInPage = window.scrollY + eRect.bottom;
+          var minScrollForEnd = endBottomInPage - vh * 0.9;
+          var stepTopInPage = window.scrollY + r.top;
+          var maxScrollWithoutHeaderOverlap = stepTopInPage - (clearance + 24);
+          if (minScrollForEnd > target) {
+            target = Math.min(minScrollForEnd, Math.max(target, maxScrollWithoutHeaderOverlap));
+          }
+        }
+        return Math.max(0, Math.round(target));
+      }
+
+      function getAllStepTargets() {
+        return stepCards.map(getStepTargetY);
+      }
+
+      function easeSilkGlide(t) {
+        /* Combinación armónica coseno + cúbica: aceleración imperceptible y aterrizaje de pluma */
+        var cosine = 0.5 - 0.5 * Math.cos(Math.PI * t);
+        var cubic = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        return cosine * 0.55 + cubic * 0.45;
+      }
+
+      function animateScrollToY(destinationY, duration) {
+        if (stepAnimRaf) {
+          window.cancelAnimationFrame(stepAnimRaf);
+          stepAnimRaf = null;
+        }
+        var startY = window.scrollY;
+        var distance = destinationY - startY;
+        if (Math.abs(distance) < 6) {
+          isStepAnimating = false;
+          return;
+        }
+
+        isStepAnimating = true;
+        var startTime = null;
+        var dur = Math.max(300, duration || stepDuration);
+
+        function stepFrame(now) {
+          if (!startTime) startTime = now;
+          var elapsed = now - startTime;
+          var progress = Math.min(1, elapsed / dur);
+          var eased = easeSilkGlide(progress);
+          var nextY = startY + distance * eased;
+
+          window.scrollTo({ top: nextY, behavior: "instant" });
+          onScrollOrResize();
+
+          if (progress < 1) {
+            stepAnimRaf = window.requestAnimationFrame(stepFrame);
+          } else {
+            window.scrollTo({ top: destinationY, behavior: "instant" });
+            onScrollOrResize();
+            stepAnimRaf = null;
+            isStepAnimating = false;
+            cooldownUntil = performance.now() + stepCooldown;
+          }
+        }
+
+        stepAnimRaf = window.requestAnimationFrame(stepFrame);
+      }
+
+      function findNextStepIndex(targets, curY, dir) {
+        var tolerance = 26;
+        if (dir > 0) {
+          for (var i = 0; i < targets.length; i++) {
+            if (targets[i] > curY + tolerance) {
+              return i;
+            }
+          }
+          return -1;
+        } else {
+          for (var j = targets.length - 1; j >= 0; j--) {
+            if (targets[j] < curY - tolerance) {
+              return j;
+            }
+          }
+          return -1;
+        }
+      }
+
+      window.addEventListener(
+        "wheel",
+        function (ev) {
+          if (editorActive || reduceMotion) return;
+          if (ev.ctrlKey || ev.metaKey || ev.defaultPrevented) return;
+          if (Math.abs(ev.deltaX) > Math.abs(ev.deltaY)) return;
+          if (document.body.classList.contains("menu-open") || $("dialog[open]")) return;
+
+          var absDelta = Math.abs(ev.deltaY);
+          var dir = ev.deltaY > 0 ? 1 : ev.deltaY < 0 ? -1 : 0;
+          if (!dir) return;
+
+          var now = performance.now();
+          var gapMs = now - lastWheelEventTs;
+
+          /* Distinguir un nuevo gesto intencional de la cola de inercia del trackpad */
+          if (gapMs > 140 || dir !== wheelGestureDir) {
+            wheelGestureConsumed = false;
+          } else if (
+            wheelGestureConsumed &&
+            !isStepAnimating &&
+            now >= cooldownUntil &&
+            absDelta > Math.max(18, prevWheelAbsDelta * 1.45)
+          ) {
+            wheelGestureConsumed = false;
+          }
+
+          lastWheelEventTs = now;
+          prevWheelAbsDelta = absDelta;
+          wheelGestureDir = dir;
+
+          var targets = getAllStepTargets();
+          if (!targets.length) return;
+
+          var vh = window.innerHeight || document.documentElement.clientHeight || 800;
+          var curY = window.scrollY;
+          var firstY = targets[0];
+          var lastY = targets[targets.length - 1];
+
+          var inDownZone = dir > 0 && curY >= firstY - vh * 0.54 && curY < lastY - 22;
+          var inUpZone = dir < 0 && curY > firstY + 22 && curY <= lastY + vh * 0.54;
+
+          if (!inDownZone && !inUpZone) {
+            return;
+          }
+
+          if (isStepAnimating || now < cooldownUntil || wheelGestureConsumed) {
+            ev.preventDefault();
+            return;
+          }
+
+          if (absDelta < 4) return;
+
+          var nextIdx = findNextStepIndex(targets, curY, dir);
+          if (nextIdx === -1) return;
+
+          ev.preventDefault();
+          wheelGestureConsumed = true;
+          animateScrollToY(targets[nextIdx], stepDuration);
+        },
+        { passive: false }
+      );
+
+      window.addEventListener("keydown", function (ev) {
+        if (editorActive || reduceMotion) return;
+        if (document.body.classList.contains("menu-open") || $("dialog[open]")) return;
+        var tag = ev.target && ev.target.tagName ? ev.target.tagName.toLowerCase() : "";
+        if (tag === "input" || tag === "textarea" || tag === "select" || tag === "button" || tag === "a") return;
+
+        var dir = 0;
+        if (ev.key === "ArrowDown" || ev.key === "PageDown" || (ev.key === " " && !ev.shiftKey)) {
+          dir = 1;
+        } else if (ev.key === "ArrowUp" || ev.key === "PageUp" || (ev.key === " " && ev.shiftKey)) {
+          dir = -1;
+        }
+        if (!dir) return;
+
+        var targets = getAllStepTargets();
+        var vh = window.innerHeight || document.documentElement.clientHeight || 800;
+        var curY = window.scrollY;
+        var firstY = targets[0];
+        var lastY = targets[targets.length - 1];
+
+        var inDownZone = dir > 0 && curY >= firstY - vh * 0.52 && curY < lastY - 22;
+        var inUpZone = dir < 0 && curY > firstY + 22 && curY <= lastY + vh * 0.52;
+        if (!inDownZone && !inUpZone) return;
+
+        var now = performance.now();
+        if (isStepAnimating || now < cooldownUntil) {
+          ev.preventDefault();
+          return;
+        }
+
+        var nextIdx = findNextStepIndex(targets, curY, dir);
+        if (nextIdx === -1) return;
+
+        ev.preventDefault();
+        animateScrollToY(targets[nextIdx], stepDuration);
+      });
+
+      if (stepScrollCfg.imanSuaveTouch !== false) {
+        window.addEventListener(
+          "touchstart",
+          function () {
+            touchActive = true;
+            if (touchSettleTimer) window.clearTimeout(touchSettleTimer);
+            if (stepAnimRaf) {
+              window.cancelAnimationFrame(stepAnimRaf);
+              stepAnimRaf = null;
+              isStepAnimating = false;
+            }
+          },
+          { passive: true }
+        );
+
+        window.addEventListener(
+          "touchend",
+          function () {
+            touchActive = false;
+            if (touchSettleTimer) window.clearTimeout(touchSettleTimer);
+            touchSettleTimer = window.setTimeout(function () {
+              if (touchActive || isStepAnimating) return;
+              var targets = getAllStepTargets();
+              var vh = window.innerHeight || document.documentElement.clientHeight || 800;
+              var curY = window.scrollY;
+              var firstY = targets[0];
+              var lastY = targets[targets.length - 1];
+              if (curY < firstY - vh * 0.24 || curY > lastY + vh * 0.24) return;
+
+              var closestY = targets[0];
+              var minDiff = Math.abs(curY - closestY);
+              for (var i = 1; i < targets.length; i++) {
+                var d = Math.abs(curY - targets[i]);
+                if (d < minDiff) {
+                  minDiff = d;
+                  closestY = targets[i];
+                }
+              }
+              if (minDiff > 14 && minDiff < vh * 0.26) {
+                animateScrollToY(closestY, 560);
+              }
+            }, 170);
+          },
+          { passive: true }
+        );
+      }
+    }
 
     /* 5. Modo Editor Visual Interactivo (?editar-linea o modoEditor: true) */
-    var editorActive = cfg.modoEditor === true || window.location.search.indexOf("editar-linea") !== -1;
     if (editorActive) {
       var handles = [];
       function renderHandles() {
