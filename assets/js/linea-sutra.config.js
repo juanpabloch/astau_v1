@@ -32,58 +32,59 @@ window.ASTAU_LINEA_CONFIG = {
   /* Suavidad y redondez de las inflexiones (0.44 a 0.46 = onda de respiración de seda) */
   tensionCurva: 0.45,
 
-  /* Recorrido en Inicio · manifiesto-titulo (4 bloques: Izq → Der → Izq → Centro → Botón):
+  /* Recorrido en Inicio · manifiesto-titulo (4 bloques en zigzag: Izq → Der → Izq → Der → Botón):
      Onda continua que abraza cada estrofa por su espacio abierto sin cruzar palabras */
   puntosManifiesto: [
     { x: 50, y: 0 },
-    { x: 70, y: 13 },
-    { x: 30, y: 34 },
-    { x: 70, y: 55 },
-    { x: 22, y: 78 },
+    { x: 68, y: 18 },
+    { x: 32, y: 37 },
+    { x: 68, y: 57 },
+    { x: 32, y: 80 },
     { x: 50, y: 100 }
   ],
 
   puntosManifiestoTablet: [
     { x: 50, y: 0 },
-    { x: 79, y: 12 },
-    { x: 21, y: 33 },
-    { x: 79, y: 54 },
-    { x: 11, y: 81 },
+    { x: 78, y: 16 },
+    { x: 22, y: 37 },
+    { x: 78, y: 58 },
+    { x: 22, y: 80 },
     { x: 50, y: 100 }
   ],
 
   puntosManifiestoMobile: [
     { x: 50, y: 0 },
-    { x: 94, y: 12 },
-    { x: 6, y: 33 },
-    { x: 94, y: 54 },
-    { x: 4, y: 81 },
+    { x: 92, y: 14 },
+    { x: 8, y: 34 },
+    { x: 92, y: 55 },
+    { x: 8, y: 80 },
     { x: 50, y: 100 }
   ],
 
-  /* Recorrido en Astau · conceptos-titulo (3 bloques: Izq → Der → Centro → Portal):
+  /* Recorrido en Astau · conceptos-titulo (3 bloques en zigzag: Izq → Der → Izq → Portal):
      Respiración pausada que enmarca cada párrafo y desemboca vertical en el círculo */
   puntosConceptos: [
     { x: 50, y: 0 },
-    { x: 70, y: 18 },
-    { x: 30, y: 47 },
-    { x: 79, y: 76 },
+    { x: 68, y: 26 },
+    { x: 32, y: 55 },
+    { x: 68, y: 79 },
     { x: 50, y: 100 }
   ],
 
   puntosConceptosTablet: [
     { x: 50, y: 0 },
-    { x: 82, y: 17 },
-    { x: 18, y: 46 },
-    { x: 88, y: 79 },
+    { x: 80, y: 22 },
+    { x: 20, y: 52 },
+    { x: 80, y: 79 },
     { x: 50, y: 100 }
   ],
 
   puntosConceptosMobile: [
     { x: 50, y: 0 },
-    { x: 94, y: 18 },
-    { x: 6, y: 48 },
-    { x: 95, y: 80 },
+    { x: 95, y: 16 },
+    { x: 94, y: 28 },
+    { x: 7, y: 51 },
+    { x: 92, y: 79 },
     { x: 50, y: 100 }
   ],
 
@@ -142,7 +143,7 @@ window.ASTAU_LINEA_CONFIG = {
     radioOrbe: 3.1,
     radioHaloOrbe: 9.5,
     opacidadHaloOrbe: 0.14,
-    colorCentroOrbe: "#eeeae4"
+    colorCentroOrbe: "#5b2e44"
   },
 
   /* ------------------------------------------------------------------------
@@ -191,8 +192,8 @@ window.ASTAU_LINEA_CONFIG = {
     opacidadApagada: 0.32,
     blurApagada: 0,
     colorApagada: "#8a837b",
-    colorEncendida: "#383838",
-    colorMundoManifiesto: "#5e5852",
+    colorEncendida: "#5b2e44",
+    colorMundoManifiesto: "#5b2e44",
     colorAcento: "#5b2e44",
 
     /* Rangos de respaldo para 3 bloques (astau/index.html) */

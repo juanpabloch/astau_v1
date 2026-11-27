@@ -89,11 +89,19 @@
 
     var footer = $("#contacto.footer");
     if (footer) {
+      var footerLogo =
+        page === "clases"
+          ? "logo-blanco.svg"
+          : page === "inicio"
+            ? "logo-negativo.svg"
+            : page === "astau"
+              ? "logo-oscuro.svg"
+              : "logo-color.svg";
       footer.innerHTML =
         '<div class="wrap">' +
         '<div class="grid footer__grid">' +
         '<div class="footer__logo">' +
-        '<img src="' + root + 'assets/brand/logo-color.svg" alt="ASTAU" width="120" height="160" loading="lazy">' +
+        '<img src="' + root + "assets/brand/" + footerLogo + '" alt="ASTAU" width="120" height="160" loading="lazy">' +
         "</div>" +
         '<div class="footer__col">' +
         '<h2 class="label">Sala</h2>' +
@@ -108,7 +116,7 @@
         "</svg>" +
         "<span>Austria 2272, 1° A<br>Recoleta, CABA</span>" +
         "</p>" +
-        '<p><a href="https://maps.app.goo.gl/wTtZTwhwu7xZctVu7" target="_blank" rel="noopener" data-track="clic_maps">Ver mapa</a></p>' +
+        '<p class="footer__map"><a href="https://maps.app.goo.gl/wTtZTwhwu7xZctVu7" target="_blank" rel="noopener" data-track="clic_maps">Ver mapa</a></p>' +
         "</div>" +
         '<div class="footer__col">' +
         '<h2 class="label">Contacto</h2>' +
@@ -1226,7 +1234,7 @@
         }
         if (orbCore) {
           orbCore.setAttribute("r", String(Math.max(1.5, rOrbe * 0.42)));
-          orbCore.setAttribute("fill", estilo.colorCentroOrbe || "#eeeae4");
+          orbCore.setAttribute("fill", estilo.colorCentroOrbe || colorLinea);
         }
       }
     }
@@ -1552,13 +1560,13 @@
     var offOpacity = textosCfg.opacidadApagada != null ? textosCfg.opacidadApagada : 0.32;
     var offBlur = textosCfg.blurApagada != null ? textosCfg.blurApagada : 0;
     var offColor = textosCfg.colorApagada || "#8a837b";
-    var onColor = textosCfg.colorEncendida || "#383838";
-    var worldColor = textosCfg.colorMundoManifiesto || "#5e5852";
+    var onColor = textosCfg.colorEncendida || "#5b2e44";
+    var worldColor = textosCfg.colorMundoManifiesto || "#5b2e44";
     var accentColor = textosCfg.colorAcento || "#5b2e44";
 
     var offRgb = parseHexRgb(offColor, [138, 131, 123]);
-    var onRgb = parseHexRgb(onColor, [56, 56, 56]);
-    var worldRgb = parseHexRgb(worldColor, [94, 88, 82]);
+    var onRgb = parseHexRgb(onColor, [91, 46, 68]);
+    var worldRgb = parseHexRgb(worldColor, [91, 46, 68]);
     var accentRgb = parseHexRgb(accentColor, [91, 46, 68]);
 
     function computeTargetProgress() {

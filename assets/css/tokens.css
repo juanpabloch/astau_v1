@@ -23,6 +23,8 @@
 :root {
   /* Color */
   --c-bg: #eeeae4ff;      /* Pantone 7527 C */
+  --c-bg-alpha: rgba(238, 234, 228, 0.4);      /* Pantone 7527 C */
+  --c-bg-alpha_x2: rgba(238, 234, 228, 0.379);      /* Pantone 7527 C */
   --c-accent: #5b2e44;    /* Pantone 7645 C */
   --c-text: #383838;      /* Pantone 447 C */
   --c-surface: #cac5bd98; /* Pantone Warm Gray 1 C */

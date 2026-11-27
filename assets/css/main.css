@@ -311,7 +311,7 @@ summary:focus:not(:focus-visible) {
 }
 
 .header.is-scrolled .header__logo img {
-  height: clamp(4.25rem, 5vw, 4.75rem);
+  height: clamp(4rem, 5vw, 4.75rem);
 }
 
 .header__logo-light {
@@ -331,14 +331,15 @@ summary:focus:not(:focus-visible) {
 }
 
 .header--over:not(.is-scrolled) .btn {
-  border-color: var(--c-bg);
-  background: var(--c-bg);
-  color: var(--c-accent);
+  background: transparent;
+  color: var(--c-bg);
+  border-color: var(--c-bg-alpha);
 }
 
 .header--over:not(.is-scrolled) .btn:hover {
-  background: transparent;
+  background: var(--c-accent);
   color: var(--c-bg);
+  border-color: var(--c-accent);
 }
 
 .header--over:not(.is-scrolled) :focus-visible {
@@ -717,10 +718,16 @@ a:hover .media img,
   position: sticky;
   top: calc(var(--header-h-scrolled, 5.2rem) - 1px);
   z-index: 40;
+  margin-top: clamp(2rem, 4vw, 3.5rem);
   background: rgb(238 234 228 / 0.82);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-block: 1px solid var(--c-line);
+  border-top: none;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.subnav + .section {
+  padding-top: clamp(4.5rem, 8vw, 7.5rem);
 }
 
 .subnav__list {
@@ -1594,19 +1601,16 @@ html:not(.js) .sched__scrollbar {
 }
 
 
-/* Footer */
-[data-page="clases"] .footer__logo img{
-  filter: brightness(0) saturate(100%) invert(81%) sepia(0%) saturate(20%) hue-rotate(218deg) brightness(88%) contrast(92%);
-}
-
 /* 7. Equipo -------------------------------------------------------------- */
 
 .sutra-section {
   position: relative;
+  z-index: 2;
   overflow-x: clip;
+  overflow-y: visible;
   isolation: isolate;
-  padding-top: clamp(8.25rem, 13.5vw, 12rem);
-  padding-bottom: clamp(11.25rem, 16vw, 14rem);
+  padding-top: clamp(7rem, 11.5vw, 10.5rem);
+  padding-bottom: clamp(7rem, 11.5vw, 10.5rem);
 }
 
 .sutra-section:has(.sutra-portal__cta) {
@@ -1651,11 +1655,17 @@ html:not(.js) .sched__scrollbar {
 }
 
 .sutra-portal--start {
-  top: clamp(0.75rem, 2.5vw, 2rem);
+  top: 0;
+  transform: translate(-50%, -50%);
 }
 
 .sutra-portal--end {
   bottom: clamp(0.5rem, 2vw, 1.5rem);
+}
+
+.sutra-portal--end:has(.sutra-portal__bloom) {
+  bottom: 0;
+  transform: translate(-50%, 50%);
 }
 
 .sutra-portal__stem {
@@ -1665,21 +1675,11 @@ html:not(.js) .sched__scrollbar {
 }
 
 .sutra-portal__stem--in {
-  height: clamp(2.5rem, 5vw, 4.25rem);
-  margin-bottom: -0.25rem;
-  opacity: 0.55;
+  display: none;
 }
 
 .sutra-portal__stem--out {
-  height: clamp(3rem, 6vw, 5rem);
-  margin-top: -0.15rem;
-  background: linear-gradient(to bottom, var(--c-accent), transparent);
-  transform: scaleY(0.25);
-  transform-origin: top center;
-  opacity: 0.3;
-  transition:
-    transform 650ms var(--ease),
-    opacity 650ms var(--ease);
+  display: none;
 }
 
 .sutra-portal__medallion {
@@ -1687,9 +1687,9 @@ html:not(.js) .sched__scrollbar {
   width: 3.85rem;
   height: 3.85rem;
   border-radius: 999px;
-  background: var(--c-bg);
-  border: 1px solid rgb(192 184 177 / 0.65);
-  box-shadow: 0 8px 24px rgb(91 46 68 / 0.05);
+  background: #5b2e44;
+  border: 1px solid #5b2e44;
+  box-shadow: 0 8px 24px rgb(91 46 68 / 0.16);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1699,15 +1699,17 @@ html:not(.js) .sched__scrollbar {
   position: absolute;
   inset: -0.38rem;
   border-radius: 999px;
-  border: 1px solid rgb(91 46 68 / 0.18);
-  opacity: 0.7;
+  border: 1px solid rgb(91 46 68 / 0.28);
+  opacity: 0.85;
   transition: transform 280ms linear;
 }
 
 .sutra-portal__mark {
+  position: relative;
+  z-index: 1;
   width: 1.85rem;
   height: 1.85rem;
-  opacity: 0.82;
+  opacity: 1;
   transition: transform 280ms linear;
 }
 
@@ -1797,7 +1799,7 @@ html:not(.js) .sched__scrollbar {
 }
 
 .sutra-portal__cta .link {
-  background: var(--c-bg);
+  /* background: transparent; */
   border-color: rgb(91 46 68 / 0.45);
   transition:
     background-color var(--t-fast) var(--ease),
@@ -1851,7 +1853,7 @@ html:not(.js) .sched__scrollbar {
 
 .sutra-canvas {
   position: absolute;
-  inset: clamp(3.75rem, 4.5vw, 5rem) 0 clamp(2.75rem, 3.8vw, 4rem) 0;
+  inset: 1.9rem 0 1.35rem 0;
   z-index: 1;
   pointer-events: none;
 }
@@ -1902,30 +1904,18 @@ html:not(.js) .sched__scrollbar {
   grid-row: 4;
 }
 
-.sutra-step--1 {
-  margin-right: auto;
-}
-
-.sutra-step--2 {
-  margin-left: auto;
-  text-align: right;
-  justify-items: end;
-}
-
-.sutra-step--3,
-.sutra-step--4 {
-  max-width: min(19.75rem, 88%);
-  margin-inline: auto;
-  text-align: center;
-  justify-items: center;
-}
-
-.sutra-journey:has(.sutra-step--4) .sutra-step--3 {
-  max-width: min(17.75rem, 82%);
-  margin-inline: 0;
+.sutra-step--1,
+.sutra-step--3 {
   margin-right: auto;
   text-align: left;
   justify-items: start;
+}
+
+.sutra-step--2,
+.sutra-step--4 {
+  margin-left: auto;
+  text-align: right;
+  justify-items: end;
 }
 
 /* .sutra-step::before {
@@ -1950,43 +1940,38 @@ html:not(.js) .sched__scrollbar {
   opacity: 0.85;
 }
 
-.sutra-step__copy {
-  font-size: clamp(1.32rem, 2.15vw, 1.9rem);
-  font-weight: 300;
-  letter-spacing: -0.015em;
-  line-height: 1.42;
-  color: var(--c-text);
-  text-wrap: balance;
-}
-
+.sutra-step__copy,
 .sutra-step__copy--quote {
-  font-size: clamp(1.36rem, 2.35vw, 2.35rem);
+  font-size: clamp(1.56rem, 2.6vw, 2.75rem);
+  font-weight: 300;
   font-style: normal;
-  line-height: 1.37;
-}
-
-[aria-labelledby="manifiesto-titulo"] .sutra-step__copy {
-  font-size: clamp(1.56rem, 3vw, 2.75rem);
-  line-height: 1.34;
+  letter-spacing: -0.005em;
+  line-height: 0.88;
+  color: rgb(91, 46, 68);
   text-wrap: pretty;
 }
 
-[aria-labelledby="manifiesto-titulo"] .sutra-word:not(.sutra-word--accent) {
+.sutra-word {
   font-size: 0.72em;
+  line-height: 1.22;
+  font-style: normal;
+}
+
+.sutra-word:not(.sutra-word--accent) {
   font-weight: 300;
   letter-spacing: -0.005em;
 }
 
-[aria-labelledby="manifiesto-titulo"] br + .sutra-word {
-  margin-top: 0.24em;
-}
-
 .sutra-accent,
 .sutra-word--accent {
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.012em;
-  color: var(--c-accent);
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(91, 46, 68);
+}
+
+.sutra-step__copy br + .sutra-word {
+  margin-top: 0.06em;
 }
 
 .sutra-step__cta {
@@ -2260,16 +2245,13 @@ html:not(.js) .sched__scrollbar {
   justify-self: end;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  min-height: 2.25rem;
-  padding: 0.3rem 0.75rem;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
   border: 1px solid rgb(192 184 177 / 0.65);
   border-radius: 999px;
   background: var(--c-bg);
-  font-size: var(--fs-label);
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--c-text);
   transition:
     color var(--t-fast) var(--ease),
@@ -2277,10 +2259,10 @@ html:not(.js) .sched__scrollbar {
     border-color var(--t-fast) var(--ease);
 }
 
-.guide-modal__close span {
-  font-size: 1.15rem;
-  font-weight: 300;
-  line-height: 1;
+.guide-modal__close svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: none;
 }
 
 .guide-modal__close:hover,
@@ -2353,8 +2335,8 @@ html:not(.js) .sched__scrollbar {
 
   .guide-modal__close {
     position: absolute;
-    top: clamp(1.25rem, 2.2vw, 1.85rem);
-    right: calc(clamp(1.5rem, 2.6vw, 2.25rem) + 0.65rem);
+    top: calc(clamp(1.5rem, 2.6vw, 2.25rem) + 0.25rem + (clamp(1.68rem, 2.6vw, 2.375rem) * 1.08 - 2.25rem) / 2);
+    right: calc(clamp(1.5rem, 2.6vw, 2.25rem) + 1.65rem);
     z-index: 4;
   }
 
@@ -2394,7 +2376,7 @@ html:not(.js) .sched__scrollbar {
   }
 
   .guide-modal__title {
-    padding-right: 7.25rem;
+    padding-right: 4.25rem;
   }
 }
 
@@ -2482,7 +2464,7 @@ html:not(.js) .sched__scrollbar {
 }
 
 .footer {
-  padding-top: clamp(3.5rem, 7vw, var(--s-6));
+  padding-top: clamp(4rem, 7vw, 6rem);
   padding-bottom: var(--s-4);
 }
 
@@ -2520,14 +2502,14 @@ html:not(.js) .sched__scrollbar {
 }
 
 .footer__col p + p {
-  margin-top: 0.1rem;
+  margin-top: -0.3rem;
 }
 
 .footer__col a {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding-block: 0.2rem;
+  /* padding-block: 0.2rem; */
   text-decoration: none;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
@@ -2536,6 +2518,7 @@ html:not(.js) .sched__scrollbar {
 
 .footer__col a:hover {
   color: var(--c-accent);
+  text-decoration: none;
 }
 
 .footer__item {
@@ -2552,6 +2535,99 @@ html:not(.js) .sched__scrollbar {
 
 .footer__item .footer__icon {
   margin-top: 0.22em;
+}
+
+.footer__map,
+.footer__item + p {
+  padding-inline-start: calc(1.05em + 0.45rem);
+}
+
+body[data-page="inicio"] .footer {
+  background: #5b2e44;
+  color: #eeeae4ff;
+}
+
+body[data-page="inicio"] .footer :focus-visible {
+  outline-color: #eeeae4ff;
+}
+
+body[data-page="inicio"] .footer ::selection {
+  background: #eeeae4ff;
+  color: #5b2e44;
+}
+
+body[data-page="inicio"] .footer .footer__grid {
+  border-block-end-color: rgb(238 234 228 / 0.24);
+}
+
+body[data-page="inicio"] .footer .footer__col a:hover {
+  color: #eeeae4ff;
+  /* text-decoration: underline; */
+  text-decoration: none;
+  opacity: 0.82;
+}
+
+body[data-page="inicio"] .footer .site-footer__bottom {
+  color: #eeeae4ff;
+  opacity: 0.88;
+}
+
+body[data-page="clases"] .footer {
+  background: #7d776f;
+  color: #ffffff;
+}
+
+body[data-page="clases"] .footer :focus-visible {
+  outline-color: #ffffff;
+}
+
+body[data-page="clases"] .footer ::selection {
+  background: #ffffff;
+  color: #7d776f;
+}
+
+body[data-page="clases"] .footer .footer__grid {
+  border-block-end-color: rgb(255 255 255 / 0.28);
+}
+
+body[data-page="clases"] .footer .footer__col a:hover {
+  color: #ffffff;
+  text-decoration: none;
+  opacity: 0.82;
+}
+
+body[data-page="clases"] .footer .site-footer__bottom {
+  color: #ffffff;
+  opacity: 1;
+}
+
+body[data-page="astau"] .footer {
+  background: #b3b7ae;
+  color: #383838;
+}
+
+body[data-page="astau"] .footer :focus-visible {
+  outline-color: #383838;
+}
+
+body[data-page="astau"] .footer ::selection {
+  background: #383838;
+  color: #eeeae4ff;
+}
+
+body[data-page="astau"] .footer .footer__grid {
+  border-block-end-color: rgb(56 56 56 / 0.24);
+}
+
+body[data-page="astau"] .footer .footer__col a:hover {
+  color: #383838;
+  text-decoration: none;
+  opacity: 0.75;
+}
+
+body[data-page="astau"] .footer .site-footer__bottom {
+  color: #383838;
+  opacity: 0.9;
 }
 
 .footer__col p {
@@ -2666,33 +2742,21 @@ html:not(.js) .sched__scrollbar {
     max-width: 26rem;
   }
 
-  .sutra-step--1 {
+  .sutra-step--1,
+  .sutra-step--3 {
     grid-column: 1 / span 7;
     margin-inline: 0;
+    text-align: left;
+    justify-items: start;
   }
 
-  .sutra-step--2 {
+  .sutra-step--2,
+  .sutra-step--4 {
     grid-column: 6 / span 7;
     text-align: right;
     justify-items: end;
     margin-left: auto;
-  }
-
-  .sutra-step--3,
-  .sutra-step--4 {
-    grid-column: 3 / span 8;
-    max-width: 29rem;
-    text-align: center;
-    justify-items: center;
-    margin-inline: auto;
-  }
-
-  .sutra-journey:has(.sutra-step--4) .sutra-step--3 {
-    grid-column: 1 / span 7;
-    max-width: 26rem;
-    text-align: left;
-    justify-items: start;
-    margin-inline: 0;
+    margin-right: 0;
   }
 }
 
@@ -2944,39 +3008,28 @@ html:not(.js) .sched__scrollbar {
   }
 
   .sutra-journey {
-    row-gap: clamp(6.25rem, 10.5vw, 9.5rem);
+    row-gap: clamp(4rem, 7vw, 6rem);
   }
 
   .sutra-step {
     max-width: 31rem;
   }
 
-  .sutra-step--1 {
+  .sutra-step--1,
+  .sutra-step--3 {
     grid-column: 2 / span 5;
+    margin-inline: 0;
+    text-align: left;
+    justify-items: start;
   }
 
-  .sutra-step--2 {
+  .sutra-step--2,
+  .sutra-step--4 {
     grid-column: 7 / span 5;
     text-align: right;
     justify-items: end;
     margin-left: auto;
-  }
-
-  .sutra-step--3,
-  .sutra-step--4 {
-    grid-column: 4 / span 6;
-    max-width: 34rem;
-    text-align: center;
-    justify-items: center;
-    margin-inline: auto;
-  }
-
-  .sutra-journey:has(.sutra-step--4) .sutra-step--3 {
-    grid-column: 2 / span 5;
-    max-width: 31rem;
-    text-align: left;
-    justify-items: start;
-    margin-inline: 0;
+    margin-right: 0;
   }
 
   .concepts div {
@@ -3057,6 +3110,7 @@ html:not(.js) .sched__scrollbar {
 
   .footer__col {
     justify-items: start;
+    padding-top: 1.6rem;
   }
 
   .site-footer__bottom {
